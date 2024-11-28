@@ -19,6 +19,7 @@ from blender_utils import (
     set_blosm_preferences,
     import_google_3d_tiles,
     save_blender_file,
+    export_fbx,
 )
 
 
@@ -34,6 +35,7 @@ if __name__ == "__main__":
     if install_and_enable_blosm(config):
         set_blosm_preferences(config)
         import_google_3d_tiles(config)
-        save_blender_file(config)
+        output_dir, filename = save_blender_file(config)
+        export_fbx(output_dir, filename)
     else:
         print("\nBlosm addon installation failed. Exiting.")

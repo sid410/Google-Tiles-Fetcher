@@ -168,6 +168,75 @@ def save_blender_file(config):
     ensure_output_directory(output_dir)
     custom_name = validate_collection_and_save_metadata(output_dir, base_name, lod, projection)
 
-    output_path = os.path.join(output_dir, f"{custom_name}.blend")
-    bpy.ops.wm.save_as_mainfile(filepath=output_path)
-    print(f"\nScene saved to {output_path}")
+    blender_file = os.path.join(output_dir, f"{custom_name}.blend")
+    if os.path.exists(blender_file):
+        print(f"File {blender_file} already exists and will be overwritten.\n")
+
+    bpy.context.preferences.filepaths.save_version = 0
+    bpy.ops.wm.save_as_mainfile(filepath=blender_file)
+    print(f"\nScene saved to {blender_file}")
+
+    return output_dir, custom_name
+
+
+def unpack_textures():
+    print("\nUnpacking textures...")
+
+    unpack_dir = os.path.join(os.path.dirname(bpy.data.filepath), "textures")
+
+    bpy.ops.file.unpack_all(method='USE_LOCAL')
+    bpy.ops.file.make_paths_absolute()
+
+    return unpack_dir
+
+
+# Is this step really needed??
+def ensure_texture_links(texture_dir):
+    print("\nEnsuring textures are correctly linked to materials...")
+    for mat in bpy.data.materials:
+        if mat.use_nodes:
+            for node in mat.node_tree.nodes:
+                if node.type == 'TEX_IMAGE' and node.image:
+                    texture_path = os.path.join(texture_dir, os.path.basename(node.image.filepath))
+                    if os.path.exists(texture_path):
+                        print(f"Linking {node.image.name} to {texture_path}")
+                        node.image.filepath = texture_path
+                    else:
+                        print(f"Missing texture: {texture_path}")
+
+
+def setup_fbx_export_settings():
+    bpy.context.scene.render.engine = 'CYCLES'  # Ensure Cycles renderer for compatibility
+    bpy.context.scene.use_nodes = False
+    bpy.context.scene.render.use_simplify = True
+    bpy.context.scene.render.simplify_subdivision = 0
+    # bpy.context.scene.render.resolution_percentage = 25
+    print("\nFBX export settings prepared.")
+
+
+def export_fbx(output_dir, custom_name):
+    blender_file = os.path.join(output_dir, f"{custom_name}.blend")
+    if not os.path.exists(blender_file):
+        print(f"Error: Input file {blender_file} does not exist.")
+        return
+
+    print(f"\nLoading Blender file: {blender_file}")
+    bpy.ops.wm.open_mainfile(filepath=blender_file)
+
+    # For now, just unpack the textures...
+    # Wasted so much time how to... still cant... fml...
+    texture_dir = unpack_textures()
+    ensure_texture_links(texture_dir)
+    setup_fbx_export_settings()
+
+    fbx_filepath = os.path.join(output_dir, f"{custom_name}.fbx")
+    bpy.ops.export_scene.fbx(
+        filepath=fbx_filepath,
+        embed_textures=True,  # Embed textures in FBX for portability
+        path_mode='COPY',  # Copy textures into the FBX
+        apply_scale_options='FBX_SCALE_NONE',
+        bake_space_transform=False,
+        bake_anim=False  # NEED TO BE FALSE otherwise export will hang
+    )
+
+    print(f"FBX export completed: {fbx_filepath}")
