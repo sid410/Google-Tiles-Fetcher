@@ -1,0 +1,18 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# Contains the API key
+config.yaml
+
+# Output files
+*.blend*
+*.csv
+
+# Output folders
+/blosm_data
+/output
+/textures
+
+# Folder to add blender addons
+/blender_addon
