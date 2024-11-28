@@ -14,5 +14,9 @@ config.yaml
 /output
 /textures
 
+# Blender installs
+/blender-*
+
+
 # Folder to add blender addons
 /blender_addon
