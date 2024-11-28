@@ -123,6 +123,15 @@ def validate_collection_and_save_metadata(output_dir, base_name, lod, projection
 
     metadata = []
 
+    origin_lat, origin_lon = projection.toGeographic(0, 0)
+    metadata.append({
+        "mesh_ID": "origin",
+        "max_lat": origin_lat,
+        "max_lon": origin_lon,
+        "min_lat": 0,
+        "min_lon": 0
+    })
+
     # Calculate combined bounds for all objects in the collection
     for obj in single_collection.objects:
         if obj.type == 'MESH':
