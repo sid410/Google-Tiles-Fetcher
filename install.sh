@@ -3,7 +3,7 @@
 set -e
 
 echo "Installing dependencies..."
-sudo apt update && sudo apt install wget software-properties-common libxrender1 libxrandr2 libxi6 libglu1-mesa -y
+sudo apt update && sudo apt install wget software-properties-common libxrender1 libxrandr2 libxi6 libglu1-mesa libsm6 -y
 
 # BLENDER
 echo "Downloading Blender..."
@@ -16,10 +16,7 @@ tar -xf blender-${BLENDER_VERSION}-linux-x64.tar.xz
 sudo mv blender-${BLENDER_VERSION}-linux-x64 /opt/blender
 
 echo "Creating symbolic link..."
-sudo ln -sf /opt/blender/blender /usr/local/bin/blender
-
-echo "Cleaning up..."
-rm blender-${BLENDER_VERSION}-linux-x64.tar.xz
+sudo ln -sf /opt/blender/blender-${BLENDER_VERSION}-linux-x64/blender /usr/local/bin/blender
 
 echo "Verifying Blender installation..."
 if command -v blender &> /dev/null; then
@@ -29,6 +26,9 @@ else
     echo "Blender installation failed."
     exit 1
 fi
+
+#echo "Cleaning up..."
+rm blender-${BLENDER_VERSION}-linux-x64.tar.xz
 
 # PYTHON and pyyaml
 echo "Getting Blender's embedded Python path..."

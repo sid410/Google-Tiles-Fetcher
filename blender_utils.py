@@ -249,3 +249,19 @@ def export_fbx(output_dir, custom_name):
     )
 
     print(f"FBX export completed: {fbx_filepath}")
+
+
+def export_gltf(output_dir, custom_name):
+    blender_file = os.path.join(output_dir, f"{custom_name}.blend")
+    if not os.path.exists(blender_file):
+        print(f"Error: Input file {blender_file} does not exist.")
+        return
+
+    print(f"\nLoading Blender file: {blender_file}")
+    bpy.ops.wm.open_mainfile(filepath=blender_file)
+    gltf_filepath = os.path.join(output_dir, f"{custom_name}.glb")
+    
+    bpy.ops.export_scene.gltf(
+        filepath=gltf_filepath,
+        export_format='GLB'
+    )
