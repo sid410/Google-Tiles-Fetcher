@@ -43,4 +43,6 @@ blender --background --python main.py
 
 ### Installation and How to Run
 
-[Download `run.bat`](https://raw.githubusercontent.com/sid410/Google-Tiles-Fetcher/main/windows/run.bat) and double click.
+Click to download [`run.bat`](https://github.com/sid410/Google-Tiles-Fetcher/releases/latest/download/run.bat)
+
+Double click `run.bat` to install and start the map select in browser.
