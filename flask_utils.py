@@ -25,11 +25,13 @@ def select_area():
         print(f"Min Latitude: {app.config['SELECTION_DATA']['min_lat']}, Min Longitude: {app.config['SELECTION_DATA']['min_lon']}")
         print(f"Max Latitude: {app.config['SELECTION_DATA']['max_lat']}, Max Longitude: {app.config['SELECTION_DATA']['max_lon']}")
         print("Selected Levels of Detail (LOD):", ", ".join(app.config["SELECTION_DATA"]["lods"]))
+        print(f"Google API Key: {app.config['SELECTION_DATA']['google_api_key']}")
+        print(f"Base Name: {app.config['SELECTION_DATA']['base_name']}")
 
         print("Setting shutdown event...\n")
         shutdown_event.set()
         return jsonify({"message": "Area selection received!\n You can now close the browser."})
-    
+
     except Exception as e:
         print(f"Error in select_area: {e}")
         return jsonify({"error": str(e)}), 500

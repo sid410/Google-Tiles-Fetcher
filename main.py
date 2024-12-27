@@ -34,6 +34,9 @@ if __name__ == "__main__":
         print("Launching Map Selection UI...")
         map_selection = run_map_selection_ui()
 
+        arguments["google_api_key"] = map_selection["google_api_key"]
+        arguments["base_name"] = map_selection["base_name"]
+
         arguments["min_lat"] = map_selection["min_lat"]
         arguments["min_lon"] = map_selection["min_lon"]
         arguments["max_lat"] = map_selection["max_lat"]

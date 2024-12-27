@@ -57,6 +57,14 @@
         </div>
         <br>
         <button id="clear">Clear Rectangle</button>
+        <br><br>
+
+        <label for="google_api_key">Google API Key:</label>
+        <input type="text" id="google_api_key" placeholder="Enter your Google API Key">
+        <br>
+        <label for="base_name">Base Name:</label>
+        <input type="text" id="base_name" placeholder="Enter base name">
+        <br><br>
     </div>
 
     <div class="lod-section">
@@ -225,7 +233,9 @@
                     min_lon: bounds.getSouthWest().lng,
                     max_lat: bounds.getNorthEast().lat,
                     max_lon: bounds.getNorthEast().lng,
-                    lods: []
+                    lods: [],
+                    google_api_key: $("#google_api_key").val(),
+                    base_name: $("#base_name").val()
                 };
 
                 $("#lod-checkbox input:checked").each(function () {
