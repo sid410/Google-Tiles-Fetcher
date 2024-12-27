@@ -11,7 +11,7 @@ from config_utils import (
     ensure_config_exists,
     validate_config,
     load_config,
-    update_config_from_args,
+    update_config,
 )
 from blender_utils import (
     parse_blender_args,
@@ -21,6 +21,7 @@ from blender_utils import (
     save_blender_file,
     export_gltf
 )
+from flask_utils import run_map_selection_ui
 
 
 if __name__ == "__main__":
@@ -28,8 +29,20 @@ if __name__ == "__main__":
 
     config_path = ensure_config_exists()
     config = load_config(config_path)
-    config = update_config_from_args(config, arguments, config_path)
 
+    if "map_select_ui" in arguments:
+        print("Launching Map Selection UI...")
+        map_selection = run_map_selection_ui()
+
+        arguments["min_lat"] = map_selection["min_lat"]
+        arguments["min_lon"] = map_selection["min_lon"]
+        arguments["max_lat"] = map_selection["max_lat"]
+        arguments["max_lon"] = map_selection["max_lon"]
+
+        # Use the first selected LOD. Change to loop later
+        arguments["lod"] = map_selection["lods"][0]
+
+    config = update_config(config, arguments, config_path)
     validate_config(config)
 
     if install_and_enable_blosm(config):

@@ -54,7 +54,7 @@ def load_config(config_path):
     return config
 
 
-def update_config_from_args(config, arguments, config_path):
+def update_config(config, arguments, config_path):
 
     if "google_api_key" in arguments:
         config.setdefault("secret", {})["google_api_key"] = arguments["google_api_key"]
@@ -70,6 +70,9 @@ def update_config_from_args(config, arguments, config_path):
 
     if "base_name" in arguments:
         config.setdefault("output", {})["base_name"] = arguments["base_name"]
+
+    if "lod" in arguments:
+        config.setdefault("blosm", {})["lod"] = arguments["lod"]
 
     with open(config_path, "w") as file:
         yaml.safe_dump(config, file, default_flow_style=False)

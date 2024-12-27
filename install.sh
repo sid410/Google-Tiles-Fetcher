@@ -30,7 +30,7 @@ fi
 #echo "Cleaning up..."
 rm blender-${BLENDER_VERSION}-linux-x64.tar.xz
 
-# PYTHON and pyyaml
+# PYTHON install: pyyaml and flask
 echo "Getting Blender's embedded Python path..."
 PYTHON_PATH=$(blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | grep -Eo '^/.*python[0-9.]+')
 if [[ -z "$PYTHON_PATH" ]]; then
@@ -51,6 +51,17 @@ if $PYTHON_PATH -m pip show pyyaml &> /dev/null; then
     echo "pyyaml installed successfully."
 else
     echo "pyyaml installation failed."
+    exit 1
+fi
+
+echo "Installing flask with Blender's Python..."
+$PYTHON_PATH -m pip install flask
+
+echo "Verifying flask installation..."
+if $PYTHON_PATH -m pip show flask &> /dev/null; then
+    echo "flask installed successfully."
+else
+    echo "flask installation failed."
     exit 1
 fi
 
