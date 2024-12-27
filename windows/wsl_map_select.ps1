@@ -1,8 +1,12 @@
-$wslUsername = wsl -d Ubuntu -- whoami
+Clear-Host
+
+$wslUsername = wsl -d Ubuntu -- whoami | ForEach-Object { $_.Trim() }
 $projectPath = "/home/$wslUsername/Google-Tiles-Fetcher"
 
 Start-Job -ScriptBlock {
-    Start-Sleep -Seconds 2
+    while (-not (Test-NetConnection -ComputerName "localhost" -Port 5000).TcpTestSucceeded) {
+        Start-Sleep -Seconds 1
+    }
     Start-Process "http://localhost:5000/"
 }
 

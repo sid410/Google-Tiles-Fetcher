@@ -30,7 +30,7 @@ if ($distros -notcontains "Ubuntu") {
 Write-Host "Ubuntu is installed. Proceeding with project setup..."
 
 
-$wslUsername = wsl -d Ubuntu -- whoami
+$wslUsername = wsl -d Ubuntu -- whoami | ForEach-Object { $_.Trim() }
 $projectPath = "/home/$wslUsername/Google-Tiles-Fetcher"
 
 
@@ -47,3 +47,6 @@ if ($repoExists -match "notexists") {
 
 Write-Host "Running the setup script..."
 wsl -d Ubuntu -- bash -c "cd $projectPath && chmod +x install.sh && ./install.sh"
+
+Write-Host "Setup completed successfully. Exiting..."
+exit 0
