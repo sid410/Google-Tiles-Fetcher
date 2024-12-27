@@ -7,8 +7,9 @@ import yaml
 
 def ensure_config_exists():
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    template_path = os.path.join(script_dir, "config_template.yaml")
-    config_path = os.path.join(script_dir, "config.yaml")
+    config_dir = os.path.join(os.path.dirname(script_dir), "config")
+    template_path = os.path.join(config_dir, "config_template.yaml")
+    config_path = os.path.join(config_dir, "config.yaml")
 
     if not os.path.exists(config_path):
         print("\n`config.yaml` not found. Generating it from `config_template.yaml`...")
@@ -16,7 +17,7 @@ def ensure_config_exists():
             shutil.copy(template_path, config_path)
             print(f"`config.yaml` has been created.")
         else:
-            raise FileNotFoundError("`config_template.yaml` is missing! Please add it to the project directory.")
+            raise FileNotFoundError(f"`config_template.yaml` is missing in the `config` folder! Please add it to: {config_dir}")
     else:
         print("\n`config.yaml` already exists. Proceeding...")
     return config_path
@@ -55,7 +56,6 @@ def load_config(config_path):
 
 
 def update_config(config, arguments, config_path):
-
     if "google_api_key" in arguments:
         config.setdefault("secret", {})["google_api_key"] = arguments["google_api_key"]
 

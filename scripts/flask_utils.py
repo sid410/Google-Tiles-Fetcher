@@ -1,9 +1,12 @@
+import os
 import threading
 from flask import Flask, render_template, jsonify, request
 from werkzeug.serving import make_server
 
 # Initialize Flask app
-app = Flask(__name__)
+project_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+templates_dir = os.path.join(project_root, "templates")
+app = Flask(__name__, template_folder=templates_dir)
 app.config["SELECTION_DATA"] = None 
 
 shutdown_event = threading.Event()
