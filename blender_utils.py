@@ -76,12 +76,35 @@ def set_blosm_preferences(config):
 def clear_scene():
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
-    print("\nScene cleared: All default objects removed.")
+    print("\nScene cleared: All objects removed.")
 
     default_collection = bpy.data.collections.get("Collection")
     if default_collection:
         bpy.data.collections.remove(default_collection)
         print("Default Collection removed.\n")
+
+
+def clear_collection_except(keep_collection_name):
+    # Extract the part of the name up to the first three underscores
+    keep_prefix = "_".join(keep_collection_name.split("_")[:3])
+    print(f"Keeping collections matching the prefix: '{keep_prefix}'")
+
+    # Create a list to avoid modification during iteration
+    collections = list(bpy.data.collections)
+
+    for collection in collections:
+        # Same compare the first three underscores
+        collection_prefix = "_".join(collection.name.split("_")[:3])
+
+        if collection_prefix != keep_prefix:
+            to_remove = collection.name
+            remove_collection = bpy.data.collections.get(to_remove)
+            bpy.data.collections.remove(remove_collection)
+            print(f"Collection '{to_remove}' removed.")
+        else:
+            print(f"Collection '{collection.name}' retained.")
+
+    print("\nCleanup completed. Only matching collections remain.\n")
 
 
 def import_google_3d_tiles(config):
@@ -112,9 +135,10 @@ def import_google_3d_tiles(config):
 
 def validate_collection_and_save_metadata(output_dir, base_name, lod, projection):
     collections = bpy.data.collections
-    if len(collections) != 1:
-        print("\nError: The scene must contain exactly one collection. Exiting.")
-        exit()
+    ## Removed because we clear the other collections later after defining custom name
+    # if len(collections) != 1:
+    #     print("\nError: The scene must contain exactly one collection. Exiting.")
+    #     exit()
 
     single_collection = next(iter(collections))
 
@@ -153,6 +177,7 @@ def validate_collection_and_save_metadata(output_dir, base_name, lod, projection
     custom_name = f"{base_name}_{lod}_{global_min_lat}_{global_min_lon}_{global_max_lat}_{global_max_lon}"
     single_collection.name = custom_name
     print(f"\nRenamed collection to: {custom_name}\n")
+    clear_collection_except(custom_name)
 
     csv_path = os.path.join(output_dir, f"{custom_name}_metadata.csv")
 

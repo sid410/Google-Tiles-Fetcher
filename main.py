@@ -1,7 +1,7 @@
 import os
 import sys
 
-# Since Blender uses it's own Python interpreter,
+# Since Blender uses its own Python interpreter,
 # ensure the script directory is in sys.path
 script_dir = os.path.dirname(os.path.realpath(__file__))
 if script_dir not in sys.path:
@@ -24,28 +24,8 @@ from blender_utils import (
 from flask_utils import run_map_selection_ui
 
 
-if __name__ == "__main__":
-    arguments = parse_blender_args()
-
-    config_path = ensure_config_exists()
-    config = load_config(config_path)
-
-    if "map_select_ui" in arguments:
-        print("Launching Map Selection UI...")
-        map_selection = run_map_selection_ui()
-
-        arguments["google_api_key"] = map_selection["google_api_key"]
-        arguments["base_name"] = map_selection["base_name"]
-
-        arguments["min_lat"] = map_selection["min_lat"]
-        arguments["min_lon"] = map_selection["min_lon"]
-        arguments["max_lat"] = map_selection["max_lat"]
-        arguments["max_lon"] = map_selection["max_lon"]
-
-        # Use the first selected LOD. Change to loop later
-        arguments["lod"] = map_selection["lods"][0]
-
-    config = update_config(config, arguments, config_path)
+def process_args(arguments, config_path):
+    config = update_config(load_config(config_path), arguments, config_path)
     validate_config(config)
 
     if install_and_enable_blosm(config):
@@ -53,5 +33,33 @@ if __name__ == "__main__":
         import_google_3d_tiles(config)
         output_dir, filename = save_blender_file(config)
         export_gltf(output_dir, filename)
+        print(f"\nProcessing for LOD {arguments['lod']} completed successfully.")
     else:
-        print("\nBlosm addon installation failed. Exiting.")
+        print(f"\nBlosm addon installation failed for LOD {arguments['lod']}.")
+
+
+if __name__ == "__main__":
+    arguments = parse_blender_args()
+    config_path = ensure_config_exists()
+
+    if "map_select_ui" in arguments:
+        print("Launching Map Selection UI...")
+        map_selection = run_map_selection_ui()
+
+        arguments.update({
+            "google_api_key": map_selection["google_api_key"],
+            "base_name": map_selection["base_name"],
+            "min_lat": map_selection["min_lat"],
+            "min_lon": map_selection["min_lon"],
+            "max_lat": map_selection["max_lat"],
+            "max_lon": map_selection["max_lon"]
+        })
+
+        for lod in map_selection["lods"]:
+            print(f"\nProcessing LOD: {lod}")
+            arguments["lod"] = lod
+            process_args(arguments, config_path)
+
+    # limit terminal command to accept only 1 LOD at a time
+    else:
+        process_args(arguments, config_path)
