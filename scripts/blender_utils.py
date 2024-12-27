@@ -4,7 +4,7 @@ import sys
 
 import bpy
 
-from projection_utils import TransverseMercator, calculate_real_bounds
+from scripts.projection_utils import TransverseMercator, calculate_real_bounds
 
 
 def parse_blender_args():

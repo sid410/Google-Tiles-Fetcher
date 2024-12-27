@@ -4,16 +4,17 @@ import sys
 # Since Blender uses its own Python interpreter,
 # ensure the script directory is in sys.path
 script_dir = os.path.dirname(os.path.realpath(__file__))
+scripts_dir = os.path.join(script_dir, "scripts")
 if script_dir not in sys.path:
     sys.path.append(script_dir)
 
-from config_utils import (
+from scripts.config_utils import (
     ensure_config_exists,
     validate_config,
     load_config,
     update_config,
 )
-from blender_utils import (
+from scripts.blender_utils import (
     parse_blender_args,
     install_and_enable_blosm,
     set_blosm_preferences,
@@ -21,7 +22,7 @@ from blender_utils import (
     save_blender_file,
     export_gltf
 )
-from flask_utils import run_map_selection_ui
+from scripts.flask_utils import run_map_selection_ui
 
 
 def process_args(arguments, config_path):
