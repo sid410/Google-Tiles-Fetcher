@@ -5,6 +5,7 @@ set -e
 echo "Installing dependencies..."
 sudo apt update && sudo apt install wget software-properties-common libxrender1 libxrandr2 libxi6 libglu1-mesa libsm6 -y
 
+###
 # BLENDER
 echo "Downloading Blender..."
 BLENDER_VERSION="4.2.3"
@@ -30,6 +31,23 @@ fi
 #echo "Cleaning up..."
 rm blender-${BLENDER_VERSION}-linux-x64.tar.xz
 
+
+###
+# BLENDER ADD-ON
+echo "Downloading Blender add-on..."
+ADDON_FOLDER="blender_addon"
+ADDON_URL="https://drive.google.com/uc?export=download&id=1Ga8J8azsYzR0Ubb3xSb-BSaq1B2fPDfX"
+
+if [ ! -d "$ADDON_FOLDER" ]; then
+    mkdir -p "$ADDON_FOLDER"
+    echo "Created directory: $ADDON_FOLDER"
+fi
+
+wget --no-check-certificate --content-disposition "$ADDON_URL" -P "$ADDON_FOLDER"
+echo "Blender add-on downloaded to $ADDON_FOLDER."
+
+
+###
 # PYTHON install: pyyaml and flask
 echo "Getting Blender's embedded Python path..."
 PYTHON_PATH=$(blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | grep -Eo '^/.*python[0-9.]+')
