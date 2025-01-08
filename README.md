@@ -18,7 +18,7 @@ chmod +x ./install.sh
 Start the flask server,
 
 ```bash
-blender --background --python main.py -- map_select_ui  
+blender --background --python main.py -- map_select_ui
 ```
 
 then open `http://localhost:5000/`
