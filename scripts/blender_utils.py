@@ -89,6 +89,14 @@ def clear_scene():
         print("Previous Google 3D Tiles Collection removed.\n")
 
 
+def rescale_scene(scale_factor):
+    for obj in bpy.context.scene.objects:
+        if obj.type == "MESH":
+            obj.scale *= scale_factor
+            obj.location *= scale_factor  # also adjust location to match scale
+    print(f"Scene rescaled by a factor of {scale_factor}.")
+
+
 def import_google_3d_tiles(config):
     clear_scene()
 
@@ -112,12 +120,15 @@ def import_google_3d_tiles(config):
     blosm_props.relativeToInitialImport = config["blosm"]["relative_to_initial_import"]
 
     if bpy.ops.blosm.import_data() == {"FINISHED"}:
-        print("\n3D Tiles successfully imported!")
+        print("\n3D Tiles successfully imported!\n")
+        rescale_scene(config["blosm"]["scale_factor"])
     else:
         print("\nFailed to import 3D Tiles.")
 
 
-def validate_collection_and_save_metadata(output_dir, base_name, lod, projection):
+def validate_collection_and_save_metadata(
+    output_dir, base_name, lod, projection, scale_factor
+):
     tiles_collection = bpy.data.collections.get("Google 3D Tiles")
 
     global_min_lat, global_min_lon = float("inf"), float("inf")
@@ -128,11 +139,11 @@ def validate_collection_and_save_metadata(output_dir, base_name, lod, projection
     origin_lat, origin_lon = projection.toGeographic(0, 0)
     metadata.append(
         {
-            "mesh_ID": "origin",
+            "mesh_ID": "origin:",
             "max_lat": origin_lat,
             "max_lon": origin_lon,
-            "min_lat": 0,
-            "min_lon": 0,
+            "min_lat": "scale_factor:",
+            "min_lon": scale_factor,
         }
     )
 
@@ -181,11 +192,13 @@ def save_blender_file(config):
 
     base_name = config["output"]["base_name"]
     lod = config["blosm"]["lod"]
+    scale_factor = config["blosm"]["scale_factor"]
 
     output_dir = config["output"]["output_dir"]
     ensure_output_directory(output_dir)
+
     custom_name = validate_collection_and_save_metadata(
-        output_dir, base_name, lod, projection
+        output_dir, base_name, lod, projection, scale_factor
     )
 
     blender_file = os.path.join(output_dir, f"{custom_name}.blend")

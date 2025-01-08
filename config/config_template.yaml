@@ -4,6 +4,7 @@ blosm:
   join_tiles_objects: false
   lod: lod4
   relative_to_initial_import: true
+  scale_factor: 0.1
   threed_tiles_source: google
 input:
   max_lat:

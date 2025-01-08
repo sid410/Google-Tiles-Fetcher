@@ -51,6 +51,7 @@ if __name__ == "__main__":
             {
                 "google_api_key": map_selection["google_api_key"],
                 "base_name": map_selection["base_name"],
+                "scale_factor": map_selection["scale_factor"],
                 "min_lat": map_selection["min_lat"],
                 "min_lon": map_selection["min_lon"],
                 "max_lat": map_selection["max_lat"],

@@ -70,8 +70,20 @@
         placeholder="Enter your Google API Key"
       />
       <br />
+
       <label for="base_name">Base Name:</label>
       <input type="text" id="base_name" placeholder="Enter base name" />
+      <br />
+
+      <label for="scale_factor">Scale Factor:</label>
+      <input
+        type="number"
+        id="scale_factor"
+        step="0.01"
+        min="0"
+        placeholder="Enter scale factor"
+      />
+
       <br /><br />
     </div>
 
@@ -246,14 +258,45 @@
       $("#select").click(function () {
           if (rectangle) {
               const bounds = rectangle.getBounds();
+              const googleApiKey = $("#google_api_key").val().trim();
+              const baseName = $("#base_name").val().trim();
+              const scaleFactor = parseFloat($("#scale_factor").val());
+
+              const selectedLods = [];
+              $("#lod-checkbox input:checked").each(function () {
+                  selectedLods.push($(this).val());
+              });
+
+              // Input data validation checks
+              if (selectedLods.length === 0) {
+                  alert("Please select at least one Level of Detail.");
+                  return;
+              }
+
+              if (!googleApiKey) {
+                  alert("Please enter a valid Google API key.");
+                  return;
+              }
+
+              if (!baseName) {
+                  alert("Please enter a valid base name.");
+                  return;
+              }
+
+              if (isNaN(scaleFactor) || scaleFactor <= 0) {
+                  alert("Please enter a valid scale factor greater than 0.");
+                  return;
+              }
+
               const data = {
                   min_lat: bounds.getSouthWest().lat,
                   min_lon: bounds.getSouthWest().lng,
                   max_lat: bounds.getNorthEast().lat,
                   max_lon: bounds.getNorthEast().lng,
-                  lods: [],
-                  google_api_key: $("#google_api_key").val(),
-                  base_name: $("#base_name").val()
+                  lods: selectedLods,
+                  google_api_key: googleApiKey,
+                  base_name: baseName,
+                  scale_factor: scaleFactor
               };
 
               $("#lod-checkbox input:checked").each(function () {

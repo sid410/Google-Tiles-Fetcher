@@ -82,6 +82,14 @@ def update_config(config, arguments, config_path):
     if "lod" in arguments:
         config.setdefault("blosm", {})["lod"] = arguments["lod"]
 
+    if "scale_factor" in arguments:
+        scale_factor = float(arguments["scale_factor"])
+        if scale_factor <= 0:
+            raise ValueError("Scale factor must be a positive value greater than 0.")
+        config.setdefault("blosm", {})["scale_factor"] = float(
+            arguments["scale_factor"]
+        )
+
     with open(config_path, "w") as file:
         yaml.safe_dump(config, file, default_flow_style=False)
 
