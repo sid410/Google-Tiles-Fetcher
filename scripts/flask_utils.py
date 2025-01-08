@@ -7,7 +7,7 @@ from werkzeug.serving import make_server
 project_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 templates_dir = os.path.join(project_root, "templates")
 app = Flask(__name__, template_folder=templates_dir)
-app.config["SELECTION_DATA"] = None 
+app.config["SELECTION_DATA"] = None
 
 shutdown_event = threading.Event()
 
@@ -17,7 +17,9 @@ def index():
     start_coords = (36.2048, 138.2529)  # Centered on Japan
     zoom_level = 7
     print("Serving Map Selection UI...")
-    return render_template("index.html", start_coords=start_coords, zoom_level=zoom_level)
+    return render_template(
+        "index.html", start_coords=start_coords, zoom_level=zoom_level
+    )
 
 
 @app.route("/select_area", methods=["POST"])
@@ -25,15 +27,24 @@ def select_area():
     try:
         app.config["SELECTION_DATA"] = request.get_json()
         print("\nSelected Area Coordinates:")
-        print(f"Min Latitude: {app.config['SELECTION_DATA']['min_lat']}, Min Longitude: {app.config['SELECTION_DATA']['min_lon']}")
-        print(f"Max Latitude: {app.config['SELECTION_DATA']['max_lat']}, Max Longitude: {app.config['SELECTION_DATA']['max_lon']}")
-        print("Selected Levels of Detail (LOD):", ", ".join(app.config["SELECTION_DATA"]["lods"]))
+        print(
+            f"Min Latitude: {app.config['SELECTION_DATA']['min_lat']}, Min Longitude: {app.config['SELECTION_DATA']['min_lon']}"
+        )
+        print(
+            f"Max Latitude: {app.config['SELECTION_DATA']['max_lat']}, Max Longitude: {app.config['SELECTION_DATA']['max_lon']}"
+        )
+        print(
+            "Selected Levels of Detail (LOD):",
+            ", ".join(app.config["SELECTION_DATA"]["lods"]),
+        )
         print(f"Google API Key: {app.config['SELECTION_DATA']['google_api_key']}")
         print(f"Base Name: {app.config['SELECTION_DATA']['base_name']}")
 
         print("Setting shutdown event...\n")
         shutdown_event.set()
-        return jsonify({"message": "Area selection received!\n You can now close the browser."})
+        return jsonify(
+            {"message": "Area selection received!\n You can now close the browser."}
+        )
 
     except Exception as e:
         print(f"Error in select_area: {e}")

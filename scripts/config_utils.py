@@ -17,7 +17,9 @@ def ensure_config_exists():
             shutil.copy(template_path, config_path)
             print(f"`config.yaml` has been created.")
         else:
-            raise FileNotFoundError(f"`config_template.yaml` is missing in the `config` folder! Please add it to: {config_dir}")
+            raise FileNotFoundError(
+                f"`config_template.yaml` is missing in the `config` folder! Please add it to: {config_dir}"
+            )
     else:
         print("\n`config.yaml` already exists. Proceeding...")
     return config_path
@@ -38,11 +40,17 @@ def validate_config(config):
             continue
 
         for field in fields:
-            if field not in config[section] or config[section][field] is None or str(config[section][field]).strip() == "":
+            if (
+                field not in config[section]
+                or config[section][field] is None
+                or str(config[section][field]).strip() == ""
+            ):
                 missing_fields.append(f"{section}.{field}")
 
     if missing_fields:
-        print("\nConfiguration Error: The following required fields are missing or empty:")
+        print(
+            "\nConfiguration Error: The following required fields are missing or empty:"
+        )
         for field in missing_fields:
             print(f"  - {field}")
         print("\nPlease update `config.yaml` and try again.")
@@ -50,7 +58,7 @@ def validate_config(config):
 
 
 def load_config(config_path):
-    with open(config_path, 'r') as file:
+    with open(config_path, "r") as file:
         config = yaml.safe_load(file)
     return config
 

@@ -1,262 +1,279 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Map Area Selection</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-editable/1.2.0/Leaflet.Editable.min.js"></script>
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-        }
-        #map {
-            width: 100%;
-            height: 100%;
-        }
-        .controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: white;
-            padding: 10px;
-            z-index: 1000;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        }
-        .lod-section {
-            position: fixed;
-            top: 50%;
-            right: 10px;
-            background-color: white;
-            padding: 10px;
-            z-index: 1000;
-            border-radius: 5px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-            transform: translateY(-50%);
-        }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+      .controls {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: white;
+        padding: 10px;
+        z-index: 1000;
+        border-radius: 5px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      }
+      .lod-section {
+        position: fixed;
+        top: 50%;
+        right: 10px;
+        background-color: white;
+        padding: 10px;
+        z-index: 1000;
+        border-radius: 5px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        transform: translateY(-50%);
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="controls">
-        <label for="max_lat">Max Latitude:</label>
-        <input type="number" id="max_lat" step="0.0000001">
-        <label for="max_lon">Max Longitude:</label>
-        <input type="number" id="max_lon" step="0.0000001">
-        <label for="min_lat">Min Latitude:</label>
-        <input type="number" id="min_lat" step="0.0000001">
-        <label for="min_lon">Min Longitude:</label>
-        <input type="number" id="min_lon" step="0.0000001">
-        <div id="area-display" style="margin-top: 10px;">
-            Estimated Area: <span id="area-value">0</span> km²
-        </div>
-        <br>
-        <button id="clear">Clear Rectangle</button>
-        <br><br>
+      <label for="max_lat">Max Latitude:</label>
+      <input type="number" id="max_lat" step="0.0000001" />
+      <label for="max_lon">Max Longitude:</label>
+      <input type="number" id="max_lon" step="0.0000001" />
+      <label for="min_lat">Min Latitude:</label>
+      <input type="number" id="min_lat" step="0.0000001" />
+      <label for="min_lon">Min Longitude:</label>
+      <input type="number" id="min_lon" step="0.0000001" />
+      <div id="area-display" style="margin-top: 10px">
+        Estimated Area: <span id="area-value">0</span> km²
+      </div>
+      <br />
+      <button id="clear">Clear Rectangle</button>
+      <br /><br />
 
-        <label for="google_api_key">Google API Key:</label>
-        <input type="text" id="google_api_key" placeholder="Enter your Google API Key">
-        <br>
-        <label for="base_name">Base Name:</label>
-        <input type="text" id="base_name" placeholder="Enter base name">
-        <br><br>
+      <label for="google_api_key">Google API Key:</label>
+      <input
+        type="text"
+        id="google_api_key"
+        placeholder="Enter your Google API Key"
+      />
+      <br />
+      <label for="base_name">Base Name:</label>
+      <input type="text" id="base_name" placeholder="Enter base name" />
+      <br /><br />
     </div>
 
     <div class="lod-section">
-        <h3>Level of details:</h3>
-        <form id="lod-checkbox">
-            <div><input type="checkbox" id="lod1" value="lod1"> Whole city</div>
-            <div><input type="checkbox" id="lod2" value="lod2"> Districts</div>
-            <div><input type="checkbox" id="lod3" value="lod3"> Groups of buildings</div>
-            <div><input type="checkbox" id="lod4" value="lod4"> Separate buildings</div>
-            <div><input type="checkbox" id="lod5" value="lod5"> Buildings with details</div>
-            <div><input type="checkbox" id="lod6" value="lod6"> Buildings with more details</div>
-        </form>
-        <br>
-        <button id="select">Select Area</button>
+      <h3>Level of details:</h3>
+      <form id="lod-checkbox">
+        <div><input type="checkbox" id="lod1" value="lod1" /> Whole city</div>
+        <div><input type="checkbox" id="lod2" value="lod2" /> Districts</div>
+        <div>
+          <input type="checkbox" id="lod3" value="lod3" /> Groups of buildings
+        </div>
+        <div>
+          <input type="checkbox" id="lod4" value="lod4" /> Separate buildings
+        </div>
+        <div>
+          <input type="checkbox" id="lod5" value="lod5" /> Buildings with
+          details
+        </div>
+        <div>
+          <input type="checkbox" id="lod6" value="lod6" /> Buildings with more
+          details
+        </div>
+      </form>
+      <br />
+      <button id="select">Select Area</button>
     </div>
 
     <div id="map"></div>
 
     <script>
-        // Initial map settings
-        const startCoords = {{ start_coords | tojson }};
-        const zoomLevel = {{ zoom_level }};
+      // Initial map settings
+      const startCoords = {{ start_coords | tojson }};
+      const zoomLevel = {{ zoom_level }};
 
-        const map = L.map('map', {
-            editable: true,
-            zoomControl: false
-        }).setView(startCoords, zoomLevel);
+      const map = L.map('map', {
+          editable: true,
+          zoomControl: false
+      }).setView(startCoords, zoomLevel);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
-        }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors'
+      }).addTo(map);
 
-        L.control.zoom({
-            position: 'bottomleft'
-        }).addTo(map);
-
-
-        // FUNCTIONS
-        let rectangle = null;
-
-        function drawRectangle(bounds) {
-            if (rectangle) {
-                map.removeLayer(rectangle);
-            }
-
-            // Draw a new rectangle
-            rectangle = L.rectangle(bounds, {
-                color: "blue",
-                weight: 2,
-                fillOpacity: 0.4
-            }).addTo(map);
-
-            // To be able to move the 4 corners
-            rectangle.enableEdit();
-
-            // Update the input fields when rectangle is edited
-            rectangle.on('editable:dragend editable:vertex:dragend', function () {
-                const rectBounds = rectangle.getBounds();
-                updateInputs(rectBounds);
-            });
-
-            // Update inputs initially
-            updateInputs(rectangle.getBounds());
-        }
-
-        function updateInputs(bounds) {
-            const sw = bounds.getSouthWest();
-            const ne = bounds.getNorthEast();
-
-            $("#min_lat").val(sw.lat);
-            $("#min_lon").val(sw.lng);
-            $("#max_lat").val(ne.lat);
-            $("#max_lon").val(ne.lng);
-
-            const area = calculateArea(bounds);
-            $("#area-value").text(area);
-        }
-
-        function updateRectangleFromInputs() {
-            const minLat = parseFloat($("#min_lat").val());
-            const minLng = parseFloat($("#min_lon").val());
-            const maxLat = parseFloat($("#max_lat").val());
-            const maxLng = parseFloat($("#max_lon").val());
-
-            if (!isNaN(minLat) && !isNaN(minLng) && !isNaN(maxLat) && !isNaN(maxLng)) {
-                const bounds = [
-                    [minLat, minLng],
-                    [maxLat, maxLng]
-                ];
-                drawRectangle(bounds);
-            }
-        }
-
-        // compared with this
-        // https://www.daftlogic.com/projects-google-maps-area-calculator-tool.htm
-        function calculateArea(bounds) {
-            const R = 6371; // Earth's radius in km
-
-            const lat1 = bounds.getSouthWest().lat;
-            const lng1 = bounds.getSouthWest().lng;
-            const lat2 = bounds.getNorthEast().lat;
-            const lng2 = bounds.getNorthEast().lng;
-
-            const toRad = angle => angle * Math.PI / 180;
-
-            const midLat = (lat1 + lat2) / 2;
-
-            const latDistance = R * (toRad(lat2) - toRad(lat1));
-            const lngDistance = R * Math.cos(toRad(midLat)) * (toRad(lng2) - toRad(lng1));
-
-            const area = Math.abs(latDistance * lngDistance);
-
-            return area.toFixed(2); // area in square kilometers
-        }
+      L.control.zoom({
+          position: 'bottomleft'
+      }).addTo(map);
 
 
+      // FUNCTIONS
+      let rectangle = null;
 
-        
-        // EVENT LISTENERS
+      function drawRectangle(bounds) {
+          if (rectangle) {
+              map.removeLayer(rectangle);
+          }
 
-        // for map clicks to create a rectangle
-        let clickCount = 0;
-        let tempBounds = [];
-        map.on('click', function (e) {
-            if (clickCount < 2) {
-                tempBounds.push([e.latlng.lat, e.latlng.lng]);
-                clickCount++;
+          // Draw a new rectangle
+          rectangle = L.rectangle(bounds, {
+              color: "blue",
+              weight: 2,
+              fillOpacity: 0.4
+          }).addTo(map);
 
-                if (clickCount === 2) {
-                    const bounds = [
-                        [Math.min(tempBounds[0][0], tempBounds[1][0]), Math.min(tempBounds[0][1], tempBounds[1][1])],
-                        [Math.max(tempBounds[0][0], tempBounds[1][0]), Math.max(tempBounds[0][1], tempBounds[1][1])]
-                    ];
-                    drawRectangle(bounds);
-                    tempBounds = [];
-                    clickCount = 0;
-                }
-            }
-        });
+          // To be able to move the 4 corners
+          rectangle.enableEdit();
 
-        // for input changes to update the rectangle
-        $("#min_lat, #min_lon, #max_lat, #max_lon").on('input', function () {
-            updateRectangleFromInputs();
-        });
+          // Update the input fields when rectangle is edited
+          rectangle.on('editable:dragend editable:vertex:dragend', function () {
+              const rectBounds = rectangle.getBounds();
+              updateInputs(rectBounds);
+          });
 
-        // to reset the rectangle and inputs
-        $("#clear").click(function () {
-            if (rectangle) {
-                map.removeLayer(rectangle);
-                rectangle = null;
-            }
+          // Update inputs initially
+          updateInputs(rectangle.getBounds());
+      }
 
-            $("#min_lat").val('');
-            $("#min_lon").val('');
-            $("#max_lat").val('');
-            $("#max_lon").val('');
-        });
+      function updateInputs(bounds) {
+          const sw = bounds.getSouthWest();
+          const ne = bounds.getNorthEast();
 
-        // to finalize the selection of the map area
-        $("#select").click(function () {
-            if (rectangle) {
-                const bounds = rectangle.getBounds();
-                const data = {
-                    min_lat: bounds.getSouthWest().lat,
-                    min_lon: bounds.getSouthWest().lng,
-                    max_lat: bounds.getNorthEast().lat,
-                    max_lon: bounds.getNorthEast().lng,
-                    lods: [],
-                    google_api_key: $("#google_api_key").val(),
-                    base_name: $("#base_name").val()
-                };
+          $("#min_lat").val(sw.lat);
+          $("#min_lon").val(sw.lng);
+          $("#max_lat").val(ne.lat);
+          $("#max_lon").val(ne.lng);
 
-                $("#lod-checkbox input:checked").each(function () {
-                    data.lods.push($(this).val());
-                });
+          const area = calculateArea(bounds);
+          $("#area-value").text(area);
+      }
 
-                // send to server
-                $.ajax({
-                    url: "/select_area",
-                    type: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify(data),
-                    success: function (response) {
-                        alert(response.message);
-                    }
-                });
-            } else {
-                alert("Please draw a rectangle first!");
-            }
-        });
+      function updateRectangleFromInputs() {
+          const minLat = parseFloat($("#min_lat").val());
+          const minLng = parseFloat($("#min_lon").val());
+          const maxLat = parseFloat($("#max_lat").val());
+          const maxLng = parseFloat($("#max_lon").val());
 
+          if (!isNaN(minLat) && !isNaN(minLng) && !isNaN(maxLat) && !isNaN(maxLng)) {
+              const bounds = [
+                  [minLat, minLng],
+                  [maxLat, maxLng]
+              ];
+              drawRectangle(bounds);
+          }
+      }
+
+      // compared with this
+      // https://www.daftlogic.com/projects-google-maps-area-calculator-tool.htm
+      function calculateArea(bounds) {
+          const R = 6371; // Earth's radius in km
+
+          const lat1 = bounds.getSouthWest().lat;
+          const lng1 = bounds.getSouthWest().lng;
+          const lat2 = bounds.getNorthEast().lat;
+          const lng2 = bounds.getNorthEast().lng;
+
+          const toRad = angle => angle * Math.PI / 180;
+
+          const midLat = (lat1 + lat2) / 2;
+
+          const latDistance = R * (toRad(lat2) - toRad(lat1));
+          const lngDistance = R * Math.cos(toRad(midLat)) * (toRad(lng2) - toRad(lng1));
+
+          const area = Math.abs(latDistance * lngDistance);
+
+          return area.toFixed(2); // area in square kilometers
+      }
+
+
+
+
+      // EVENT LISTENERS
+
+      // for map clicks to create a rectangle
+      let clickCount = 0;
+      let tempBounds = [];
+      map.on('click', function (e) {
+          if (clickCount < 2) {
+              tempBounds.push([e.latlng.lat, e.latlng.lng]);
+              clickCount++;
+
+              if (clickCount === 2) {
+                  const bounds = [
+                      [Math.min(tempBounds[0][0], tempBounds[1][0]), Math.min(tempBounds[0][1], tempBounds[1][1])],
+                      [Math.max(tempBounds[0][0], tempBounds[1][0]), Math.max(tempBounds[0][1], tempBounds[1][1])]
+                  ];
+                  drawRectangle(bounds);
+                  tempBounds = [];
+                  clickCount = 0;
+              }
+          }
+      });
+
+      // for input changes to update the rectangle
+      $("#min_lat, #min_lon, #max_lat, #max_lon").on('input', function () {
+          updateRectangleFromInputs();
+      });
+
+      // to reset the rectangle and inputs
+      $("#clear").click(function () {
+          if (rectangle) {
+              map.removeLayer(rectangle);
+              rectangle = null;
+          }
+
+          $("#min_lat").val('');
+          $("#min_lon").val('');
+          $("#max_lat").val('');
+          $("#max_lon").val('');
+      });
+
+      // to finalize the selection of the map area
+      $("#select").click(function () {
+          if (rectangle) {
+              const bounds = rectangle.getBounds();
+              const data = {
+                  min_lat: bounds.getSouthWest().lat,
+                  min_lon: bounds.getSouthWest().lng,
+                  max_lat: bounds.getNorthEast().lat,
+                  max_lon: bounds.getNorthEast().lng,
+                  lods: [],
+                  google_api_key: $("#google_api_key").val(),
+                  base_name: $("#base_name").val()
+              };
+
+              $("#lod-checkbox input:checked").each(function () {
+                  data.lods.push($(this).val());
+              });
+
+              // send to server
+              $.ajax({
+                  url: "/select_area",
+                  type: "POST",
+                  contentType: "application/json",
+                  data: JSON.stringify(data),
+                  success: function (response) {
+                      alert(response.message);
+                  }
+              });
+          } else {
+              alert("Please draw a rectangle first!");
+          }
+      });
     </script>
-</body>
+  </body>
 </html>
