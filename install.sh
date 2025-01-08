@@ -12,7 +12,7 @@ BLENDER_VERSION="4.2.3"
 BLENDER_URL="https://mirrors.aliyun.com/blender/release/Blender4.2/blender-${BLENDER_VERSION}-linux-x64.tar.xz"
 
 echo "Checking for existing Blender installation..."
-if command -v blender &> /dev/null; then
+if command -v blender &>/dev/null; then
     INSTALLED_VERSION=$(blender --version | head -n 1 | awk '{print $2}')
     echo "Found Blender version: $INSTALLED_VERSION"
     if [ "$INSTALLED_VERSION" == "$BLENDER_VERSION" ]; then
@@ -50,14 +50,13 @@ fi
 
 echo
 echo "Verifying Blender installation..."
-if command -v blender &> /dev/null; then
+if command -v blender &>/dev/null; then
     echo "Blender installed successfully. Version:"
     blender --version
 else
     echo "Blender installation failed."
     exit 1
 fi
-
 
 ###
 # BLENDER ADD-ON
@@ -81,7 +80,6 @@ else
     echo "Blender add-on downloaded to $ADDON_FOLDER/$ADDON_FILENAME."
 fi
 
-
 ###
 # PYTHON install: pyyaml and flask
 echo
@@ -103,7 +101,7 @@ echo "Installing pyyaml with Blender's Python..."
 $PYTHON_PATH -m pip install pyyaml
 
 echo "Verifying pyyaml installation..."
-if $PYTHON_PATH -m pip show pyyaml &> /dev/null; then
+if $PYTHON_PATH -m pip show pyyaml &>/dev/null; then
     echo "pyyaml installed successfully."
 else
     echo "pyyaml installation failed."
@@ -115,7 +113,7 @@ echo "Installing flask with Blender's Python..."
 $PYTHON_PATH -m pip install flask
 
 echo "Verifying flask installation..."
-if $PYTHON_PATH -m pip show flask &> /dev/null; then
+if $PYTHON_PATH -m pip show flask &>/dev/null; then
     echo "flask installed successfully."
 else
     echo "flask installation failed."
