@@ -10,7 +10,7 @@ from scripts.projection_utils import TransverseMercator, calculate_real_bounds
 def parse_blender_args():
     argv = sys.argv
     if "--" in argv:
-        args = argv[argv.index("--") + 1:]
+        args = argv[argv.index("--") + 1 :]
     else:
         args = []
 
@@ -74,7 +74,7 @@ def set_blosm_preferences(config):
 
 
 def clear_scene():
-    bpy.ops.object.select_all(action='SELECT')
+    bpy.ops.object.select_all(action="SELECT")
     bpy.ops.object.delete()
     print("\nScene cleared: All objects removed.")
 
@@ -94,7 +94,9 @@ def import_google_3d_tiles(config):
 
     addon_name = "blosm"
     if addon_name not in bpy.context.preferences.addons:
-        print(f"\n{addon_name} addon is not enabled. Please install and enable it first.")
+        print(
+            f"\n{addon_name} addon is not enabled. Please install and enable it first."
+        )
         return
 
     scene = bpy.context.scene
@@ -109,7 +111,7 @@ def import_google_3d_tiles(config):
     blosm_props.join3dTilesObjects = config["blosm"]["join_tiles_objects"]
     blosm_props.relativeToInitialImport = config["blosm"]["relative_to_initial_import"]
 
-    if bpy.ops.blosm.import_data() == {'FINISHED'}:
+    if bpy.ops.blosm.import_data() == {"FINISHED"}:
         print("\n3D Tiles successfully imported!")
     else:
         print("\nFailed to import 3D Tiles.")
@@ -118,43 +120,51 @@ def import_google_3d_tiles(config):
 def validate_collection_and_save_metadata(output_dir, base_name, lod, projection):
     tiles_collection = bpy.data.collections.get("Google 3D Tiles")
 
-    global_min_lat, global_min_lon = float('inf'), float('inf')
-    global_max_lat, global_max_lon = float('-inf'), float('-inf')
+    global_min_lat, global_min_lon = float("inf"), float("inf")
+    global_max_lat, global_max_lon = float("-inf"), float("-inf")
 
     metadata = []
 
     origin_lat, origin_lon = projection.toGeographic(0, 0)
-    metadata.append({
-        "mesh_ID": "origin",
-        "max_lat": origin_lat,
-        "max_lon": origin_lon,
-        "min_lat": 0,
-        "min_lon": 0
-    })
+    metadata.append(
+        {
+            "mesh_ID": "origin",
+            "max_lat": origin_lat,
+            "max_lon": origin_lon,
+            "min_lat": 0,
+            "min_lon": 0,
+        }
+    )
 
     # Calculate combined bounds for all objects in the collection
     for obj in tiles_collection.objects:
-        if obj.type == 'MESH':
-            real_min_lat, real_min_lon, real_max_lat, real_max_lon = calculate_real_bounds(obj, projection)
+        if obj.type == "MESH":
+            real_min_lat, real_min_lon, real_max_lat, real_max_lon = (
+                calculate_real_bounds(obj, projection)
+            )
 
             global_min_lat = min(global_min_lat, real_min_lat)
             global_min_lon = min(global_min_lon, real_min_lon)
             global_max_lat = max(global_max_lat, real_max_lat)
             global_max_lon = max(global_max_lon, real_max_lon)
 
-            metadata.append({
-                "mesh_ID": obj.name,
-                "max_lat": real_max_lat,
-                "max_lon": real_max_lon,
-                "min_lat": real_min_lat,
-                "min_lon": real_min_lon
-            })
+            metadata.append(
+                {
+                    "mesh_ID": obj.name,
+                    "max_lat": real_max_lat,
+                    "max_lon": real_max_lon,
+                    "min_lat": real_min_lat,
+                    "min_lon": real_min_lon,
+                }
+            )
 
     custom_name = f"{base_name}_{lod}_{global_min_lat}_{global_min_lon}_{global_max_lat}_{global_max_lon}"
     csv_path = os.path.join(output_dir, f"{custom_name}_metadata.csv")
 
     with open(csv_path, mode="w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=["mesh_ID", "max_lat", "max_lon", "min_lat", "min_lon"])
+        writer = csv.DictWriter(
+            file, fieldnames=["mesh_ID", "max_lat", "max_lon", "min_lat", "min_lon"]
+        )
         writer.writeheader()
         writer.writerows(metadata)
 
@@ -165,14 +175,18 @@ def validate_collection_and_save_metadata(output_dir, base_name, lod, projection
 
 def save_blender_file(config):
     scene = bpy.context.scene
-    projection = TransverseMercator(lat=scene.get("lat", 0.0), lon=scene.get("lon", 0.0))
+    projection = TransverseMercator(
+        lat=scene.get("lat", 0.0), lon=scene.get("lon", 0.0)
+    )
 
     base_name = config["output"]["base_name"]
     lod = config["blosm"]["lod"]
 
     output_dir = config["output"]["output_dir"]
     ensure_output_directory(output_dir)
-    custom_name = validate_collection_and_save_metadata(output_dir, base_name, lod, projection)
+    custom_name = validate_collection_and_save_metadata(
+        output_dir, base_name, lod, projection
+    )
 
     blender_file = os.path.join(output_dir, f"{custom_name}.blend")
     if os.path.exists(blender_file):
@@ -190,7 +204,7 @@ def unpack_textures():
 
     unpack_dir = os.path.join(os.path.dirname(bpy.data.filepath), "textures")
 
-    bpy.ops.file.unpack_all(method='USE_LOCAL')
+    bpy.ops.file.unpack_all(method="USE_LOCAL")
     bpy.ops.file.make_paths_absolute()
 
     return unpack_dir
@@ -202,8 +216,10 @@ def ensure_texture_links(texture_dir):
     for mat in bpy.data.materials:
         if mat.use_nodes:
             for node in mat.node_tree.nodes:
-                if node.type == 'TEX_IMAGE' and node.image:
-                    texture_path = os.path.join(texture_dir, os.path.basename(node.image.filepath))
+                if node.type == "TEX_IMAGE" and node.image:
+                    texture_path = os.path.join(
+                        texture_dir, os.path.basename(node.image.filepath)
+                    )
                     if os.path.exists(texture_path):
                         print(f"Linking {node.image.name} to {texture_path}")
                         node.image.filepath = texture_path
@@ -212,7 +228,9 @@ def ensure_texture_links(texture_dir):
 
 
 def setup_fbx_export_settings():
-    bpy.context.scene.render.engine = 'CYCLES'  # Ensure Cycles renderer for compatibility
+    bpy.context.scene.render.engine = (
+        "CYCLES"  # Ensure Cycles renderer for compatibility
+    )
     bpy.context.scene.use_nodes = False
     bpy.context.scene.render.use_simplify = True
     bpy.context.scene.render.simplify_subdivision = 0
@@ -239,10 +257,10 @@ def export_fbx(output_dir, custom_name):
     bpy.ops.export_scene.fbx(
         filepath=fbx_filepath,
         embed_textures=True,  # Embed textures in FBX for portability
-        path_mode='COPY',  # Copy textures into the FBX
-        apply_scale_options='FBX_SCALE_NONE',
+        path_mode="COPY",  # Copy textures into the FBX
+        apply_scale_options="FBX_SCALE_NONE",
         bake_space_transform=False,
-        bake_anim=False  # NEED TO BE FALSE otherwise export will hang
+        bake_anim=False,  # NEED TO BE FALSE otherwise export will hang
     )
 
     print(f"FBX export completed: {fbx_filepath}")
@@ -257,8 +275,5 @@ def export_gltf(output_dir, custom_name):
     print(f"\nLoading Blender file: {blender_file}")
     bpy.ops.wm.open_mainfile(filepath=blender_file)
     gltf_filepath = os.path.join(output_dir, f"{custom_name}.glb")
-    
-    bpy.ops.export_scene.gltf(
-        filepath=gltf_filepath,
-        export_format='GLB'
-    )
+
+    bpy.ops.export_scene.gltf(filepath=gltf_filepath, export_format="GLB")
