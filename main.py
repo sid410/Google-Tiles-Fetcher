@@ -34,9 +34,9 @@ def process_args(arguments, config_path):
         import_google_3d_tiles(config)
         output_dir, filename = save_blender_file(config)
         export_gltf(output_dir, filename)
-        print(f"\nProcessing for LOD {arguments['lod']} completed successfully.")
+        print(f"\nProcessing for {config['blosm']['lod']} completed successfully.")
     else:
-        print(f"\nBlosm addon installation failed for LOD {arguments['lod']}.")
+        print(f"\nBlosm addon installation failed for {config['blosm']['lod']}.")
 
 
 if __name__ == "__main__":
@@ -59,7 +59,7 @@ if __name__ == "__main__":
         )
 
         for lod in map_selection["lods"]:
-            print(f"\nProcessing LOD: {lod}")
+            print(f"\nProcessing: {lod}")
             arguments["lod"] = lod
             process_args(arguments, config_path)
 
