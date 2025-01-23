@@ -18,7 +18,7 @@ if not defined VC_REDIST_CHECK (
     echo ============================================
     echo Visual C++ Redistributable not found. Downloading and installing...
     echo ============================================
-    curl -L -o "%VC_REDIST_FILE%" "%VC_REDIST_URL%"
+    call :DownloadFile "%VC_REDIST_URL%" "%VC_REDIST_FILE%"
     if exist "%VC_REDIST_FILE%" (
         echo Successfully downloaded Visual C++ Redistributable. Proceeding with installation...
         "%VC_REDIST_FILE%" /install /quiet /norestart
@@ -42,7 +42,6 @@ if not defined VC_REDIST_CHECK (
 
 echo ============================================
 echo Checking if Blender is installed...
-echo ============================================
 
 if exist "%INSTALL_DIR%\blender.exe" (
     echo Blender is already installed at "%INSTALL_DIR%".
@@ -52,17 +51,15 @@ if exist "%INSTALL_DIR%\blender.exe" (
 
 echo ============================================
 echo Downloading Blender installer...
-echo ============================================
 
-curl -L -o "%OUTPUT_FILE%" "%DOWNLOAD_URL%"
-if %errorlevel% neq 0 (
+call :DownloadFile "%DOWNLOAD_URL%" "%OUTPUT_FILE%"
+if not exist "%OUTPUT_FILE%" (
     echo Failed to download the installer. Exiting.
     exit /b 1
 )
 
 echo ============================================
 echo Installing Blender...
-echo ============================================
 
 msiexec /i "%OUTPUT_FILE%" /passive
 if %errorlevel% neq 0 (
@@ -164,4 +161,15 @@ del "%OUTPUT_FILE%"
 echo ============================================
 echo Blender related setup complete!
 echo ============================================
-pause
+
+:: Function for downloading files
+:DownloadFile
+:: %1 - URL
+:: %2 - Output file
+curl -L -o "%~2" "%~1"
+if %errorlevel% neq 0 (
+    echo Curl failed to download. Falling back to PowerShell...
+    powershell -Command "try { Invoke-WebRequest -Uri '%~1' -OutFile '%~2' -ErrorAction Stop } catch { exit 1 }"
+)
+
+exit /b
