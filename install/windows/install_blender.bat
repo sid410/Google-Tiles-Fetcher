@@ -170,6 +170,16 @@ echo ============================================
 :DownloadFile
 :: %1 - URL
 :: %2 - Output file
+
+if "%~1"=="" (
+    echo Error: URL not specified for download.
+    exit /b 1
+)
+if "%~2"=="" (
+    echo Error: Output file path not specified for download.
+    exit /b 1
+)
+
 curl -L -o "%~2" "%~1"
 if %errorlevel% neq 0 (
     echo Curl failed to download. Falling back to PowerShell...
