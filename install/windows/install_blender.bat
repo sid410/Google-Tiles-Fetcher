@@ -1,5 +1,31 @@
 @echo off
 
+goto :Main
+
+:: --- Function for downloading files
+:DownloadFile
+:: %1 - URL
+:: %2 - Output file
+if "%~1"=="" (
+    echo Error: URL not specified for download.
+    exit /b 1
+)
+if "%~2"=="" (
+    echo Error: Output file path not specified for download.
+    exit /b 1
+)
+
+echo Attempting to download: %~1
+curl -L -o "%~2" "%~1"
+if %errorlevel% neq 0 (
+    echo Curl failed to download. Falling back to PowerShell...
+    powershell -Command "try { Invoke-WebRequest -Uri '%~1' -OutFile '%~2' -ErrorAction Stop } catch { exit 1 }"
+)
+exit /b
+:: ---
+
+
+:Main
 :: Variables
 set "VC_REDIST_URL=https://aka.ms/vs/17/release/vc_redist.x64.exe"
 set "VC_REDIST_FILE=vc_redist.x64.exe"
@@ -165,25 +191,5 @@ del "%BLENDER_FILE%"
 echo ============================================
 echo Blender related setup complete!
 echo ============================================
-
-:: Function for downloading files
-:DownloadFile
-:: %1 - URL
-:: %2 - Output file
-
-if "%~1"=="" (
-    echo Error: URL not specified for download.
-    exit /b 1
-)
-if "%~2"=="" (
-    echo Error: Output file path not specified for download.
-    exit /b 1
-)
-
-curl -L -o "%~2" "%~1"
-if %errorlevel% neq 0 (
-    echo Curl failed to download. Falling back to PowerShell...
-    powershell -Command "try { Invoke-WebRequest -Uri '%~1' -OutFile '%~2' -ErrorAction Stop } catch { exit 1 }"
-)
 
 exit /b
