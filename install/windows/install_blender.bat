@@ -3,9 +3,9 @@
 :: Variables
 set "VC_REDIST_URL=https://aka.ms/vs/17/release/vc_redist.x64.exe"
 set "VC_REDIST_FILE=vc_redist.x64.exe"
-set "DOWNLOAD_URL=https://mirror.freedif.org/blender/release/Blender4.2/blender-4.2.6-windows-x64.msi"
-set "OUTPUT_FILE=Blender.msi"
-set "INSTALL_DIR=C:\Program Files\Blender Foundation\Blender 4.2"
+set "BLENDER_DOWNLOAD_URL=https://mirror.freedif.org/blender/release/Blender4.2/blender-4.2.6-windows-x64.msi"
+set "BLENDER_FILE=Blender.msi"
+set "BLENDER_INSTALL_DIR=C:\Program Files\Blender Foundation\Blender 4.2"
 
 echo ============================================
 echo Checking for Visual C++ Redistributable...
@@ -18,7 +18,10 @@ if not defined VC_REDIST_CHECK (
     echo ============================================
     echo Visual C++ Redistributable not found. Downloading and installing...
     echo ============================================
+
+    echo Downloading from URL: "%VC_REDIST_URL%" to file: "%VC_REDIST_FILE%"
     call :DownloadFile "%VC_REDIST_URL%" "%VC_REDIST_FILE%"
+
     if exist "%VC_REDIST_FILE%" (
         echo Successfully downloaded Visual C++ Redistributable. Proceeding with installation...
         "%VC_REDIST_FILE%" /install /quiet /norestart
@@ -43,8 +46,8 @@ if not defined VC_REDIST_CHECK (
 echo ============================================
 echo Checking if Blender is installed...
 
-if exist "%INSTALL_DIR%\blender.exe" (
-    echo Blender is already installed at "%INSTALL_DIR%".
+if exist "%BLENDER_INSTALL_DIR%\blender.exe" (
+    echo Blender is already installed at "%BLENDER_INSTALL_DIR%".
     echo Skipping installation steps.
     goto UpdatePath
 )
@@ -52,8 +55,9 @@ if exist "%INSTALL_DIR%\blender.exe" (
 echo ============================================
 echo Downloading Blender installer...
 
-call :DownloadFile "%DOWNLOAD_URL%" "%OUTPUT_FILE%"
-if not exist "%OUTPUT_FILE%" (
+echo Downloading from URL: "%BLENDER_DOWNLOAD_URL%" to file: "%BLENDER_FILE%"
+call :DownloadFile "%BLENDER_DOWNLOAD_URL%" "%BLENDER_FILE%"
+if not exist "%BLENDER_FILE%" (
     echo Failed to download the installer. Exiting.
     exit /b 1
 )
@@ -61,7 +65,7 @@ if not exist "%OUTPUT_FILE%" (
 echo ============================================
 echo Installing Blender...
 
-msiexec /i "%OUTPUT_FILE%" /passive
+msiexec /i "%BLENDER_FILE%" /passive
 if %errorlevel% neq 0 (
     echo Installation failed. Exiting.
     exit /b 1
@@ -73,9 +77,9 @@ echo Adding Blender to PATH permanently...
 echo ============================================
 
 for /f "tokens=*" %%A in ('powershell -command "[System.Environment]::GetEnvironmentVariable('Path', 'Machine')"') do set "CURRENT_PATH=%%A"
-echo %CURRENT_PATH% | find "%INSTALL_DIR%" >nul
+echo %CURRENT_PATH% | find "%BLENDER_INSTALL_DIR%" >nul
 if %errorlevel% neq 0 (
-    setx Path "%CURRENT_PATH%;%INSTALL_DIR%" /M
+    setx Path "%CURRENT_PATH%;%BLENDER_INSTALL_DIR%" /M
     echo Blender path added permanently to the system PATH.
 ) else (
     echo Blender path is already in the system PATH.
@@ -156,7 +160,7 @@ echo Cleaning up downloaded files...
 echo ============================================
 
 del "%VC_REDIST_FILE%"
-del "%OUTPUT_FILE%"
+del "%BLENDER_FILE%"
 
 echo ============================================
 echo Blender related setup complete!
