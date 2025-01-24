@@ -1,6 +1,18 @@
 @echo off
 setlocal
 
+:: Check for admin rights. Not sure if  there is a better way...
+mkdir "%__APPDIR__%testadmincheck" >nul 2>&1
+if not exist "%__APPDIR__%testadmincheck" (
+    echo Error: This script must be run as an administrator.
+    pause
+    exit /b 1
+)
+rmdir "%__APPDIR__%testadmincheck" >nul 2>&1
+
+:: cd to where it is opened, just in case it jumps to system32
+cd /d "%~dp0"
+
 start "Blender Process" cmd /c "blender --background --python main.py -- map_select_ui"
 
 :: Loop to check if the server is up
