@@ -1,12 +1,12 @@
-import os
+from pathlib import Path
 import threading
 from flask import Flask, render_template, jsonify, request
 from werkzeug.serving import make_server
 
 # Initialize Flask app
-project_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-templates_dir = os.path.join(project_root, "templates")
-app = Flask(__name__, template_folder=templates_dir)
+project_root = Path(__file__).resolve().parent.parent
+templates_dir = project_root / "templates"
+app = Flask(__name__, template_folder=str(templates_dir))
 app.config["SELECTION_DATA"] = None
 
 shutdown_event = threading.Event()
@@ -43,7 +43,7 @@ def select_area():
         print("Setting shutdown event...\n")
         shutdown_event.set()
         return jsonify(
-            {"message": "Area selection received!\n You can now close the browser."}
+            {"message": "Area selection received! You can now close the browser."}
         )
 
     except Exception as e:
@@ -52,15 +52,23 @@ def select_area():
 
 
 class ServerThread(threading.Thread):
-    def __init__(self, app):
+    def __init__(self, app, port=5000):
         super().__init__()
-        self.server = make_server("0.0.0.0", 5000, app)
+        self.port = port
+        try:
+            self.server = make_server("0.0.0.0", self.port, app)
+        except OSError as e:
+            print(f"Port {self.port} is unavailable. Please check if it's in use.")
+            raise e
         self.ctx = app.app_context()
         self.ctx.push()
 
     def run(self):
-        print("Starting Flask server...")
-        self.server.serve_forever()
+        print(f"Starting Flask server on port {self.port}...")
+        try:
+            self.server.serve_forever()
+        except Exception as e:
+            print(f"Error while running server: {e}")
 
     def shutdown(self):
         print("Shutting down Flask server...")
@@ -68,8 +76,8 @@ class ServerThread(threading.Thread):
         self.ctx.pop()
 
 
-def run_map_selection_ui():
-    server_thread = ServerThread(app)
+def run_map_selection_ui(port=5000):
+    server_thread = ServerThread(app, port=port)
     server_thread.start()
 
     shutdown_event.wait()

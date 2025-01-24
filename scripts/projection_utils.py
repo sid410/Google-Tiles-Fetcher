@@ -50,6 +50,11 @@ def calculate_real_bounds(obj, projection):
     Calculate the real latitude and longitude bounds of an object using the Transverse Mercator projection.
     """
 
+    # Ensure the object's bounding box is valid
+    if not obj.bound_box:
+        raise ValueError(f"Object {obj.name} has an invalid or empty bounding box.")
+
+    # Calculate min/max bounds in local coordinates
     min_bound = [min(v[i] for v in obj.bound_box) for i in range(3)]
     max_bound = [max(v[i] for v in obj.bound_box) for i in range(3)]
 
@@ -57,6 +62,7 @@ def calculate_real_bounds(obj, projection):
     min_bound_world = obj.matrix_world @ mathutils.Vector(min_bound)
     max_bound_world = obj.matrix_world @ mathutils.Vector(max_bound)
 
+    # Convert to geographic coordinates
     real_min_lat, real_min_lon = projection.toGeographic(
         min_bound_world.x, min_bound_world.y
     )

@@ -1,19 +1,18 @@
-import os
+from pathlib import Path
 import shutil
-import sys
-
 import yaml
+import sys
 
 
 def ensure_config_exists():
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    config_dir = os.path.join(os.path.dirname(script_dir), "config")
-    template_path = os.path.join(config_dir, "config_template.yaml")
-    config_path = os.path.join(config_dir, "config.yaml")
+    script_dir = Path(__file__).resolve().parent
+    config_dir = script_dir.parent / "config"
+    template_path = config_dir / "config_template.yaml"
+    config_path = config_dir / "config.yaml"
 
-    if not os.path.exists(config_path):
+    if not config_path.exists():
         print("\n`config.yaml` not found. Generating it from `config_template.yaml`...")
-        if os.path.exists(template_path):
+        if template_path.exists():
             shutil.copy(template_path, config_path)
             print(f"`config.yaml` has been created.")
         else:
@@ -48,17 +47,17 @@ def validate_config(config):
                 missing_fields.append(f"{section}.{field}")
 
     if missing_fields:
-        print(
+        error_message = (
             "\nConfiguration Error: The following required fields are missing or empty:"
         )
         for field in missing_fields:
-            print(f"  - {field}")
-        print("\nPlease update `config.yaml` and try again.")
-        sys.exit(1)
+            error_message += f"\n  - {field}"
+        error_message += "\n\nPlease update `config.yaml` and try again."
+        raise ValueError(error_message)
 
 
 def load_config(config_path):
-    with open(config_path, "r") as file:
+    with config_path.open("r", encoding="utf-8") as file:
         config = yaml.safe_load(file)
     return config
 
@@ -86,11 +85,9 @@ def update_config(config, arguments, config_path):
         scale_factor = float(arguments["scale_factor"])
         if scale_factor <= 0:
             raise ValueError("Scale factor must be a positive value greater than 0.")
-        config.setdefault("blosm", {})["scale_factor"] = float(
-            arguments["scale_factor"]
-        )
+        config.setdefault("blosm", {})["scale_factor"] = scale_factor
 
-    with open(config_path, "w") as file:
+    with config_path.open("w", encoding="utf-8") as file:
         yaml.safe_dump(config, file, default_flow_style=False)
 
     print(f"\nConfiguration updated and saved to {config_path}")
