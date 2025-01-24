@@ -43,6 +43,12 @@ blender --background --python main.py
 
 ### Installation and How to Run
 
-Click to download [`run.bat`](https://github.com/sid410/Google-Tiles-Fetcher/releases/latest/download/run.bat)
+Click to download [`installer.bat`](https://github.com/sid410/Google-Tiles-Fetcher/releases/latest/download/installer.bat)
 
-Double click `run.bat` to install and start the map select in browser.
+Right click `installer.bat` and run as admin. It should automatically install everything and create a shortcut on Desktop called `fetch`.
+
+Right click `fetch` and run as admin. It should start the map_select_ui and automatically opens a default browser to show this.
+
+Select the desired area by clicking two corners to define a rectangle. Enter your Google API key to request the Google Tiles. Enter a base name to describe that area (no need to be unique because lat/lon is also appended in the naming convention). Enter a scale factor (usually 1). Select the Level of details for the quality of the Google Tiles (more details have bigger file size).
+
+###### Note: if the fetch shortcut creation failed, navigate to the Google-Tiles-Fetcher directory (under C:\Program Files) and instead run as admin `fetch.bat`.
