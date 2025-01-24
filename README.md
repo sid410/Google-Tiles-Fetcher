@@ -41,6 +41,10 @@ blender --background --python main.py
 
 ## For Windows
 
+### Prerequisite
+
+To ensure having `winget` and `curl` for Windows 10/11, update Windows to the latest version. Both should be part of the "App Installer" package.
+
 ### Installation and How to Run
 
 Click to download [`installer.bat`](https://github.com/sid410/Google-Tiles-Fetcher/releases/latest/download/installer.bat)
