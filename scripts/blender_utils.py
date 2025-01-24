@@ -1,9 +1,7 @@
 import csv
-import os
+from pathlib import Path
 import sys
-
 import bpy
-
 from scripts.projection_utils import TransverseMercator, calculate_real_bounds
 
 
@@ -26,48 +24,47 @@ def parse_blender_args():
 
 
 def ensure_output_directory(output_dir):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-        print(f"\nOutput directory created: {output_dir}")
-    else:
-        print(f"\nOutput directory already exists: {output_dir}")
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"\nOutput directory ensured: {output_dir}")
 
 
 def install_and_enable_blosm(config):
     addon_name = "blosm"
-    addon_zip_path = config["blosm"]["addon_zip_path"]
+    addon_zip_path = Path(config["blosm"]["addon_zip_path"])
 
     if addon_name in bpy.context.preferences.addons:
         print(f"\n{addon_name} is already installed and enabled.")
         return True
 
-    print(f"\nInstalling addon from {addon_zip_path}...")
-    bpy.ops.preferences.addon_install(filepath=addon_zip_path)
-
-    print(f"Enabling addon {addon_name}...")
-    bpy.ops.preferences.addon_enable(module=addon_name)
-
-    bpy.ops.wm.save_userpref()
-
-    if addon_name in bpy.context.preferences.addons:
-        print(f"Addon {addon_name} installed and enabled successfully.")
-        return True
-    else:
-        print(f"Failed to enable addon {addon_name}.")
+    if not addon_zip_path.exists():
+        print(f"\nError: Addon zip file not found at {addon_zip_path}")
         return False
+
+    print(f"\nInstalling addon from {addon_zip_path}...")
+    result = bpy.ops.preferences.addon_install(filepath=str(addon_zip_path))
+
+    if "FINISHED" in result:
+        print(f"Enabling addon {addon_name}...")
+        bpy.ops.preferences.addon_enable(module=addon_name)
+        bpy.ops.wm.save_userpref()
+
+        if addon_name in bpy.context.preferences.addons:
+            print(f"Addon {addon_name} installed and enabled successfully.")
+            return True
+    print(f"Failed to enable addon {addon_name}.")
+    return False
 
 
 def set_blosm_preferences(config):
     addon_name = "blosm"
     blosm_prefs = bpy.context.preferences.addons[addon_name].preferences
 
-    data_dir = config["blosm"]["data_dir"]
-    if not os.path.exists(data_dir):
-        os.makedirs(data_dir)
-    blosm_prefs.dataDir = data_dir
+    data_dir = Path(config["blosm"]["data_dir"])
+    data_dir.mkdir(parents=True, exist_ok=True)
+    blosm_prefs.dataDir = str(data_dir)
 
-    google_api_key = config["secret"]["google_api_key"]
-    blosm_prefs.googleMapsApiKey = google_api_key
+    blosm_prefs.googleMapsApiKey = config["secret"]["google_api_key"]
 
     bpy.ops.wm.save_userpref()
     print(f"\nPreferences updated: dataDir={data_dir}, Google API key set.")
