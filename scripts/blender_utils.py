@@ -167,9 +167,9 @@ def validate_collection_and_save_metadata(
             )
 
     custom_name = f"{base_name}_{lod}_{global_min_lat}_{global_min_lon}_{global_max_lat}_{global_max_lon}"
-    csv_path = os.path.join(output_dir, f"{custom_name}_metadata.csv")
+    csv_path = Path(output_dir) / f"{custom_name}_metadata.csv"
 
-    with open(csv_path, mode="w", newline="") as file:
+    with csv_path.open(mode="w", newline="", encoding="utf-8") as file:
         writer = csv.DictWriter(
             file, fieldnames=["mesh_ID", "max_lat", "max_lon", "min_lat", "min_lon"]
         )
