@@ -3,8 +3,13 @@ name: Release Installer
 
 on:
   push:
+    branches:
+      - main
     paths:
       - install/windows/installer.bat
+
+permissions:
+  contents: write
 
 jobs:
   create-versioned-release:
