@@ -137,5 +137,49 @@ if exist "%INSTALL_BLENDER_SCRIPT%" (
     exit /b 1
 )
 
+echo ============================================
+echo Creating a shortcut for fetch.bat on the Desktop...
+
+set "FETCH_BAT=%TARGET_DIR%\fetch.bat"
+set "SHORTCUT_PATH="
+set "DESKTOP_DIR="
+
+:: Temporary file to store PowerShell output
+set "TEMP_DESKTOP_FILE=%TEMP%\desktop_path.txt"
+
+:: Determine the Desktop directory and write it to a temp file
+powershell -NoProfile -Command "try { $Desktop = [Environment]::GetFolderPath('Desktop'); if (!(Test-Path -Path $Desktop)) { $Desktop = Join-Path $env:USERPROFILE 'OneDrive\Desktop'; if (!(Test-Path -Path $Desktop)) { exit 1 } }; $Desktop | Out-File -FilePath '%TEMP_DESKTOP_FILE%' -Encoding ASCII -NoNewline } catch { exit 1 }"
+
+:: Read the desktop path from the temp file
+if exist "%TEMP_DESKTOP_FILE%" (
+    set /p "DESKTOP_DIR=" < "%TEMP_DESKTOP_FILE%"
+    del "%TEMP_DESKTOP_FILE%"
+) else (
+    echo Error: Unable to determine Desktop directory.
+    pause
+    exit /b 1
+)
+
+set "SHORTCUT_PATH=%DESKTOP_DIR%\fetch.lnk"
+echo DEBUG: DESKTOP_DIR=%DESKTOP_DIR%
+echo DEBUG: SHORTCUT_PATH=%SHORTCUT_PATH%
+
+if not exist "%FETCH_BAT%" (
+    echo Error: fetch.bat not found at the repository root: %FETCH_BAT%.
+    pause
+    exit /b 1
+)
+
+:: Create the shortcut using PowerShell command
+powershell -NoProfile -Command "try { $WScriptShell = New-Object -ComObject WScript.Shell; $Shortcut = $WScriptShell.CreateShortcut('%SHORTCUT_PATH%'); $Shortcut.TargetPath = '%FETCH_BAT%'; $Shortcut.WorkingDirectory = '%TARGET_DIR%'; $Shortcut.IconLocation = '%SystemRoot%\System32\shell32.dll,1'; $Shortcut.Save() } catch { exit 1 }"
+
+if %errorlevel% neq 0 (
+    echo Error: Failed to create the shortcut for fetch.bat.
+    pause
+    exit /b 1
+) else (
+    echo Shortcut for fetch.bat successfully created on the Desktop.
+)
+
 pause
 exit /b 0
