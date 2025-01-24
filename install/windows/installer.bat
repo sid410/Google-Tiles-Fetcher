@@ -181,5 +181,7 @@ if %errorlevel% neq 0 (
     echo Shortcut for fetch.bat successfully created on the Desktop.
 )
 
+echo ============================================
+echo Successfully installed everything. You can now close this.
 pause
 exit /b 0
