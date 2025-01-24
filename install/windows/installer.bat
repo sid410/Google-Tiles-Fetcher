@@ -182,6 +182,7 @@ if %errorlevel% neq 0 (
 )
 
 echo ============================================
-echo Successfully installed everything. You can now close this.
+echo Successfully installed everything. You can now close this and run `fetch` as admin.
+
 pause
 exit /b 0
