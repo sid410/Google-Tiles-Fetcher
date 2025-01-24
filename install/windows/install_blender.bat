@@ -1,8 +1,19 @@
 @echo off
 setlocal enabledelayedexpansion
+
+:: Ensure script runs from its own directory
+cd /d "%~dp0"
+
+:: Check for admin rights and elevate if necessary
+>nul 2>&1 "%SYSTEMROOT%\\system32\\cacls.exe" "%SYSTEMROOT%\\system32\\config\\system"
+if '%errorlevel%' NEQ '0' (
+    echo Requesting admin privileges...
+    powershell -Command "Start-Process '%~f0' -Verb RunAs"
+    exit /b
+)
+
 goto :Main
 
-:: --- Subroutine for downloading files
 :DownloadFile
 :: %1 - URL
 :: %2 - Output file
@@ -22,9 +33,7 @@ if %errorlevel% neq 0 (
     powershell -Command "try { Invoke-WebRequest -Uri '%~1' -OutFile '%~2' -ErrorAction Stop } catch { exit 1 }"
 )
 exit /b
-:: ---
 
-:: --- Subroutines below especially for Visual C++ Redistributable
 :WaitForFile
 :: Ensure file is fully downloaded before proceeding
 :: %1 - File path to check
@@ -43,7 +52,6 @@ if "!FILE_READY!"=="0" (
 )
 goto :EOF
 
-:: --- Another subroutine for Visual C++ Redistributable
 :CheckDLLs
 :: Check if required runtime DLLs are present
 set "DLLS_TO_CHECK=msvcp140.dll vcruntime140.dll msvcp140_1.dll"
@@ -59,14 +67,16 @@ for %%D in (%DLLS_TO_CHECK%) do (
 :: Return the result
 set "CHECK_DLL_RESULT=!DLL_FOUND!"
 exit /b
-:: ---
 
 
 :: ------------ Start the main logic here
 :Main
-:: Variables
+:: Variables for VC++ REDIS
 set "VC_REDIST_URL=https://aka.ms/vs/17/release/vc_redist.x64.exe"
-set "VC_REDIST_FILE=vc_redist.x64.exe"
+set "VC_REDIST_FILE=%~dp0vc_redist.x64.exe"
+set "INSTALL_LOG=%~dp0install_log.txt"
+
+:: Variables for Blender
 set "BLENDER_DOWNLOAD_URL=https://mirror.freedif.org/blender/release/Blender4.2/blender-4.2.6-windows-x64.msi"
 set "BLENDER_FILE=Blender.msi"
 set "BLENDER_INSTALL_DIR=C:\Program Files\Blender Foundation\Blender 4.2"
@@ -99,23 +109,17 @@ if not exist "%VC_REDIST_FILE%" (
     exit /b 1
 )
 
-:: Debug: Verify the downloaded file
-echo [DEBUG] Verifying downloaded file: "%VC_REDIST_FILE%"
-
 :: Install the downloaded file
 echo Installing Visual C++ Redistributable from: "%VC_REDIST_FILE%"
-"%VC_REDIST_FILE%" /install /quiet /norestart > install_log.txt 2>&1
+"%VC_REDIST_FILE%" /install /quiet /norestart > "%INSTALL_LOG%" 2>&1
 set "INSTALL_RESULT=%errorlevel%"
 
-:: Debug: Log the installation result
-echo [DEBUG] INSTALL_RESULT: "!INSTALL_RESULT!"
 if "!INSTALL_RESULT!" neq "0" (
-    echo [ERROR] Installation failed with exit code "!INSTALL_RESULT!". Check install_log.txt for details.
+    echo [ERROR] Installation failed with exit code "!INSTALL_RESULT!". Check "%INSTALL_LOG%" for details.
     pause
     exit /b 1
 )
 
-:: Recheck for missing DLLs
 echo Rechecking Visual C++ Redistributable installation...
 call :CheckDLLs
 
