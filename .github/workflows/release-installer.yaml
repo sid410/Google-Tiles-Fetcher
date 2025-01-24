@@ -12,16 +12,16 @@ permissions:
   contents: write
 
 jobs:
-  create-versioned-release:
-    name: Create Versioned Release
+  create-release:
+    name: Create Release and Upload Installer
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Get latest release
-        id: get_latest_release
+      - name: Find out next version
+        id: version
         run: |
           latest_release=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
           if [[ "$latest_release" == "null" ]]; then
@@ -32,21 +32,10 @@ jobs:
             echo "RELEASE_VERSION=${base_version}.${next_patch}" >> $GITHUB_ENV
           fi
 
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Create GitHub Release and Upload
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
-          release_name: ${{ env.RELEASE_VERSION }}
-          draft: false
-          prerelease: false
+          files: install/windows/installer.bat
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload installer.bat
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: install/windows/installer.bat
-          asset_name: installer.bat
-          asset_content_type: text/plain

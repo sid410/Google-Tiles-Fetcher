@@ -183,6 +183,5 @@ if %errorlevel% neq 0 (
 
 echo ============================================
 echo Successfully installed everything. You can now close this.
-
 pause
 exit /b 0
