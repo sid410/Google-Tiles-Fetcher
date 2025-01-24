@@ -1,0 +1,47 @@
+# Currently, release for the installer is only on Windows
+name: Release Installer
+
+on:
+  push:
+    paths:
+      - install/windows/installer.bat
+
+jobs:
+  create-versioned-release:
+    name: Create Versioned Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get latest release
+        id: get_latest_release
+        run: |
+          latest_release=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name')
+          if [[ "$latest_release" == "null" ]]; then
+            echo "RELEASE_VERSION=v1.0.0" >> $GITHUB_ENV
+          else
+            base_version=${latest_release%.*}
+            next_patch=$(( ${latest_release##*.} + 1 ))
+            echo "RELEASE_VERSION=${base_version}.${next_patch}" >> $GITHUB_ENV
+          fi
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          release_name: ${{ env.RELEASE_VERSION }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload installer.bat
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: install/windows/installer.bat
+          asset_name: installer.bat
+          asset_content_type: text/plain
