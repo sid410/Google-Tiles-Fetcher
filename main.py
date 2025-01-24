@@ -1,12 +1,15 @@
-import os
+from pathlib import Path
 import sys
+import os
+import platform
 
-# Since Blender uses its own Python interpreter,
-# ensure the script directory is in sys.path
-script_dir = os.path.dirname(os.path.realpath(__file__))
-scripts_dir = os.path.join(script_dir, "scripts")
-if script_dir not in sys.path:
-    sys.path.append(script_dir)
+# import subprocess
+
+# Ensure the script directory is in sys.path
+script_dir = Path(__file__).resolve().parent
+scripts_dir = script_dir / "scripts"
+if str(script_dir) not in sys.path:
+    sys.path.append(str(script_dir))
 
 from scripts.config_utils import (
     ensure_config_exists,
@@ -25,6 +28,24 @@ from scripts.blender_utils import (
 from scripts.flask_utils import run_map_selection_ui
 
 
+def open_output_folder(output_dir):
+    """
+    Currently we only open the folder for Windows.
+    """
+    try:
+        system_name = platform.system()
+        if system_name == "Windows":
+            os.startfile(output_dir)
+        # elif system_name == "Darwin":  # macOS
+        #     subprocess.run(["open", output_dir], check=True)
+        # else:  # Linux and other Unix-like systems
+        #     subprocess.run(["xdg-open", output_dir], check=True)
+        else:  # Linux and other Unix-like systems
+            print(f"Not on Windows so skipping auto open folder.")
+    except Exception as e:
+        print(f"Failed to open folder {output_dir}: {e}")
+
+
 def process_args(arguments, config_path):
     config = update_config(load_config(config_path), arguments, config_path)
     validate_config(config)
@@ -35,8 +56,10 @@ def process_args(arguments, config_path):
         output_dir, filename = save_blender_file(config)
         export_gltf(output_dir, filename)
         print(f"\nProcessing for {config['blosm']['lod']} completed successfully.")
+        return output_dir, filename
     else:
         print(f"\nBlosm addon installation failed for {config['blosm']['lod']}.")
+        return None, None
 
 
 if __name__ == "__main__":
@@ -59,11 +82,18 @@ if __name__ == "__main__":
             }
         )
 
+        output_dir = None
+
         for lod in map_selection["lods"]:
             print(f"\nProcessing: {lod}")
             arguments["lod"] = lod
-            process_args(arguments, config_path)
+            output_dir, _ = process_args(arguments, config_path)
 
-    # limit terminal command to accept only 1 LOD at a time
+        if output_dir:
+            open_output_folder(output_dir)
+
     else:
-        process_args(arguments, config_path)
+        output_dir, _ = process_args(arguments, config_path)
+
+        if output_dir:
+            open_output_folder(output_dir)
