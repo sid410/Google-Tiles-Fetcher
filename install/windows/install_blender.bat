@@ -1,8 +1,8 @@
 @echo off
-
+setlocal enabledelayedexpansion
 goto :Main
 
-:: --- Function for downloading files
+:: --- Subroutine for downloading files
 :DownloadFile
 :: %1 - URL
 :: %2 - Output file
@@ -24,7 +24,45 @@ if %errorlevel% neq 0 (
 exit /b
 :: ---
 
+:: --- Subroutines below especially for Visual C++ Redistributable
+:WaitForFile
+:: Ensure file is fully downloaded before proceeding
+:: %1 - File path to check
+set "FILE_READY=0"
+for /l %%i in (1,1,10) do (
+    if exist "%~1" (
+        set "FILE_READY=1"
+        goto :EOF
+    )
+    echo Waiting for file "%~1" to be ready... (Attempt %%i of 10)
+    timeout /t 1 >nul
+)
+if "!FILE_READY!"=="0" (
+    echo [ERROR] File "%~1" did not become ready in time. Exiting.
+    exit /b 1
+)
+goto :EOF
 
+:: --- Another subroutine for Visual C++ Redistributable
+:CheckDLLs
+:: Check if required runtime DLLs are present
+set "DLLS_TO_CHECK=msvcp140.dll vcruntime140.dll msvcp140_1.dll"
+set "DLL_FOUND=1"
+
+for %%D in (%DLLS_TO_CHECK%) do (
+    if not exist "%WINDIR%\\System32\\%%D" (
+        echo Missing required DLL: %%D
+        set "DLL_FOUND=0"
+    )
+)
+
+:: Return the result
+set "CHECK_DLL_RESULT=!DLL_FOUND!"
+exit /b
+:: ---
+
+
+:: ------------ Start the main logic here
 :Main
 :: Variables
 set "VC_REDIST_URL=https://aka.ms/vs/17/release/vc_redist.x64.exe"
@@ -37,37 +75,68 @@ echo ============================================
 echo Checking for Visual C++ Redistributable...
 echo ============================================
 
-set "VC_REDIST_CHECK="
-for /f "tokens=*" %%A in ('reg query "HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" /v Installed 2^>nul') do set "VC_REDIST_CHECK=%%A"
+call :CheckDLLs
 
-if not defined VC_REDIST_CHECK (
-    echo ============================================
-    echo Visual C++ Redistributable not found. Downloading and installing...
-    echo ============================================
-
-    echo Downloading from URL: "%VC_REDIST_URL%" to file: "%VC_REDIST_FILE%"
-    call :DownloadFile "%VC_REDIST_URL%" "%VC_REDIST_FILE%"
-
-    if exist "%VC_REDIST_FILE%" (
-        echo Successfully downloaded Visual C++ Redistributable. Proceeding with installation...
-        "%VC_REDIST_FILE%" /install /quiet /norestart
-        set "INSTALL_RESULT=%errorlevel%"
-        
-        echo Checking Visual C++ Redistributable installation status...
-        for /f "tokens=*" %%A in ('reg query "HKLM\SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" /v Installed 2^>nul') do set "VC_REDIST_CHECK=%%A"
-        if defined VC_REDIST_CHECK (
-            echo Visual C++ Redistributable installed successfully.
-        ) else (
-            echo Failed to install Visual C++ Redistributable. Exiting.
-            exit /b 1
-        )
-    ) else (
-        echo Failed to download Visual C++ Redistributable. Exiting.
-        exit /b 1
-    )
+if "!CHECK_DLL_RESULT!"=="0" (
+    goto :DownloadAndInstall
 ) else (
-    echo Visual C++ Redistributable is already installed.
+    goto :AlreadyInstalled
 )
+
+:DownloadAndInstall
+echo ============================================
+echo Missing required DLLs. Proceeding to download and install Visual C++ Redistributable...
+echo ============================================
+
+echo Downloading from URL: "%VC_REDIST_URL%" to file: "%VC_REDIST_FILE%"
+call :DownloadFile "%VC_REDIST_URL%" "%VC_REDIST_FILE%"
+
+:: Ensure file is fully downloaded
+call :WaitForFile "%VC_REDIST_FILE%"
+
+if not exist "%VC_REDIST_FILE%" (
+    echo [ERROR] Download failed or file "%VC_REDIST_FILE%" does not exist. Exiting.
+    exit /b 1
+)
+
+:: Debug: Verify the downloaded file
+echo [DEBUG] Verifying downloaded file: "%VC_REDIST_FILE%"
+
+:: Install the downloaded file
+echo Installing Visual C++ Redistributable from: "%VC_REDIST_FILE%"
+"%VC_REDIST_FILE%" /install /quiet /norestart > install_log.txt 2>&1
+set "INSTALL_RESULT=%errorlevel%"
+
+:: Debug: Log the installation result
+echo [DEBUG] INSTALL_RESULT: "!INSTALL_RESULT!"
+if "!INSTALL_RESULT!" neq "0" (
+    echo [ERROR] Installation failed with exit code "!INSTALL_RESULT!". Check install_log.txt for details.
+    pause
+    exit /b 1
+)
+
+:: Recheck for missing DLLs
+echo Rechecking Visual C++ Redistributable installation...
+call :CheckDLLs
+
+if "!CHECK_DLL_RESULT!"=="0" (
+    echo [ERROR] DLLs are still missing after installation. Exiting.
+    pause
+    exit /b 1
+) else (
+    echo Visual C++ Redistributable installed successfully.
+)
+
+goto :EndVcRedis
+
+:AlreadyInstalled
+echo Visual C++ Redistributable is already installed. Proceeding...
+
+:EndVcRedis
+echo ============================================
+echo Visual C++ Redistributable setup complete!
+
+
 
 echo ============================================
 echo Checking if Blender is installed...
