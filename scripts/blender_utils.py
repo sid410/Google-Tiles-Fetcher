@@ -191,19 +191,19 @@ def save_blender_file(config):
     lod = config["blosm"]["lod"]
     scale_factor = config["blosm"]["scale_factor"]
 
-    output_dir = config["output"]["output_dir"]
+    output_dir = Path(config["output"]["output_dir"])
     ensure_output_directory(output_dir)
 
     custom_name = validate_collection_and_save_metadata(
         output_dir, base_name, lod, projection, scale_factor
     )
 
-    blender_file = os.path.join(output_dir, f"{custom_name}.blend")
-    if os.path.exists(blender_file):
+    blender_file = output_dir / f"{custom_name}.blend"
+    if blender_file.exists():
         print(f"File {blender_file} already exists and will be overwritten.\n")
 
     bpy.context.preferences.filepaths.save_version = 0
-    bpy.ops.wm.save_as_mainfile(filepath=blender_file)
+    bpy.ops.wm.save_as_mainfile(filepath=str(blender_file))
     print(f"\nScene saved to {blender_file}")
 
     return output_dir, custom_name
@@ -212,8 +212,7 @@ def save_blender_file(config):
 def unpack_textures():
     print("\nUnpacking textures...")
 
-    unpack_dir = os.path.join(os.path.dirname(bpy.data.filepath), "textures")
-
+    unpack_dir = Path(bpy.data.filepath).parent / "textures"
     bpy.ops.file.unpack_all(method="USE_LOCAL")
     bpy.ops.file.make_paths_absolute()
 
@@ -227,63 +226,57 @@ def ensure_texture_links(texture_dir):
         if mat.use_nodes:
             for node in mat.node_tree.nodes:
                 if node.type == "TEX_IMAGE" and node.image:
-                    texture_path = os.path.join(
-                        texture_dir, os.path.basename(node.image.filepath)
-                    )
-                    if os.path.exists(texture_path):
+                    texture_path = texture_dir / Path(node.image.filepath).name
+                    if texture_path.exists():
                         print(f"Linking {node.image.name} to {texture_path}")
-                        node.image.filepath = texture_path
+                        node.image.filepath = str(texture_path)
                     else:
                         print(f"Missing texture: {texture_path}")
 
 
 def setup_fbx_export_settings():
-    bpy.context.scene.render.engine = (
-        "CYCLES"  # Ensure Cycles renderer for compatibility
-    )
+    bpy.context.scene.render.engine = "CYCLES"
     bpy.context.scene.use_nodes = False
     bpy.context.scene.render.use_simplify = True
     bpy.context.scene.render.simplify_subdivision = 0
-    # bpy.context.scene.render.resolution_percentage = 25
     print("\nFBX export settings prepared.")
 
 
 def export_fbx(output_dir, custom_name):
-    blender_file = os.path.join(output_dir, f"{custom_name}.blend")
-    if not os.path.exists(blender_file):
+    blender_file = Path(output_dir) / f"{custom_name}.blend"
+    if not blender_file.exists():
         print(f"Error: Input file {blender_file} does not exist.")
         return
 
     print(f"\nLoading Blender file: {blender_file}")
-    bpy.ops.wm.open_mainfile(filepath=blender_file)
+    bpy.ops.wm.open_mainfile(filepath=str(blender_file))
 
-    # For now, just unpack the textures...
-    # Wasted so much time how to... still cant... fml...
     texture_dir = unpack_textures()
     ensure_texture_links(texture_dir)
     setup_fbx_export_settings()
 
-    fbx_filepath = os.path.join(output_dir, f"{custom_name}.fbx")
+    fbx_filepath = Path(output_dir) / f"{custom_name}.fbx"
     bpy.ops.export_scene.fbx(
-        filepath=fbx_filepath,
-        embed_textures=True,  # Embed textures in FBX for portability
-        path_mode="COPY",  # Copy textures into the FBX
+        filepath=str(fbx_filepath),
+        embed_textures=True,
+        path_mode="COPY",
         apply_scale_options="FBX_SCALE_NONE",
         bake_space_transform=False,
-        bake_anim=False,  # NEED TO BE FALSE otherwise export will hang
+        bake_anim=False,  # NEED TO BE FALSE OTHERWISE EXPORT WILL HANG
     )
 
     print(f"FBX export completed: {fbx_filepath}")
 
 
 def export_gltf(output_dir, custom_name):
-    blender_file = os.path.join(output_dir, f"{custom_name}.blend")
-    if not os.path.exists(blender_file):
+    blender_file = Path(output_dir) / f"{custom_name}.blend"
+    if not blender_file.exists():
         print(f"Error: Input file {blender_file} does not exist.")
         return
 
     print(f"\nLoading Blender file: {blender_file}")
-    bpy.ops.wm.open_mainfile(filepath=blender_file)
-    gltf_filepath = os.path.join(output_dir, f"{custom_name}.glb")
+    bpy.ops.wm.open_mainfile(filepath=str(blender_file))
 
-    bpy.ops.export_scene.gltf(filepath=gltf_filepath, export_format="GLB")
+    gltf_filepath = Path(output_dir) / f"{custom_name}.glb"
+    bpy.ops.export_scene.gltf(filepath=str(gltf_filepath), export_format="GLB")
+    print(f"GLTF export completed: {gltf_filepath}")
