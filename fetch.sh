@@ -20,5 +20,12 @@ while ! curl -s http://localhost:5000 >/dev/null; do
     sleep 2
 done
 
-xdg-open http://localhost:5000/
+# Allow access to X server
+xhost +SI:localuser:root
+
+echo "Opening http://localhost:5000/"
+xdg-open http://localhost:5000/ || {
+    echo "Error: Failed to open the URL. Please open it manually: http://localhost:5000/"
+}
+
 echo "Server started successfully."

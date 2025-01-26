@@ -144,4 +144,4 @@ else
     exit 1
 fi
 
-echo "Installation complete. You can now run by: sudo fetch-tiles."
+echo "Installation complete. You can now run by: sudo fetch-tiles"
