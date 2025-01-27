@@ -1,12 +1,11 @@
-# Currently, release for the installer is only on Windows
-name: Release Installer
+name: Release Installer Updates
 
 on:
   push:
     branches:
       - main
     paths:
-      - install/windows/installer.bat
+      - install/*
 
 permissions:
   contents: write
@@ -36,6 +35,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ env.RELEASE_VERSION }}
-          files: install/windows/installer.bat
+          files: |
+            install/installer-win.bat
+            install/installer-linux.sh
+            install/installer-mac.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
