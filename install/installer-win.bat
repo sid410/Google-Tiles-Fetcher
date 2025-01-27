@@ -121,18 +121,18 @@ if not exist "%ADDON_FILE%" (
 )
 
 echo ============================================
-echo Running install_blender.bat...
+echo Running install-blenderWin.bat...
 
-set "INSTALL_BLENDER_SCRIPT=%TARGET_DIR%\install\windows\install_blender.bat"
+set "INSTALL_BLENDER_SCRIPT=%TARGET_DIR%\install\install-blenderWin.bat"
 if exist "%INSTALL_BLENDER_SCRIPT%" (
     call "%INSTALL_BLENDER_SCRIPT%"
     if %errorlevel% neq 0 (
-        echo Error: install_blender.bat encountered an error.
+        echo Error: install-blenderWin.bat encountered an error.
         pause
         exit /b 1
     )
 ) else (
-    echo Error: install_blender.bat not found in the expected location: %INSTALL_BLENDER_SCRIPT%.
+    echo Error: install-blenderWin.bat not found in the expected location: %INSTALL_BLENDER_SCRIPT%.
     pause
     exit /b 1
 )
