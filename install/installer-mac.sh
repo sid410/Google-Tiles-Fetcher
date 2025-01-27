@@ -120,27 +120,29 @@ hdiutil detach "$MOUNT_DIR"
 echo "Cleaning up temporary files..."
 rm -f "$TEMP_DMG"
 
+# CURRENTLY HAVING PROBLEMS WITH SYMBOLIC LINKS IN MAC...
 echo "Creating symbolic link for Blender..."
 BLENDER_BINARY="/Applications/Blender.app/Contents/MacOS/Blender"
-SYMLINK_PATH="/usr/local/bin/blender"
-if [ ! -L "$SYMLINK_PATH" ]; then
-    ln -sf "$BLENDER_BINARY" "$SYMLINK_PATH"
-    echo "Symbolic link created: blender -> $BLENDER_BINARY"
-else
-    echo "Symbolic link already exists: $SYMLINK_PATH"
-fi
+# SYMLINK_PATH="/usr/local/bin/blender"
+# if [ ! -L "$SYMLINK_PATH" ]; then
+#     ln -sf "$BLENDER_BINARY" "$SYMLINK_PATH"
+#     echo "Symbolic link created: blender -> $BLENDER_BINARY"
+# else
+#     echo "Symbolic link already exists: $SYMLINK_PATH"
+# fi
 
-echo "Verifying Blender installation..."
-if command -v blender &>/dev/null; then
-    echo "Blender has been installed successfully."
-    blender --version
-else
-    echo "Failed to verify Blender installation. Please check manually."
-    exit 1
-fi
+# echo "Verifying Blender installation..."
+# if command -v blender &>/dev/null; then
+#     echo "Blender has been installed successfully."
+#     blender --version
+# else
+#     echo "Failed to verify Blender installation. Please check manually."
+#     exit 1
+# fi
 
+# SO INSTEAD, WE USE THE REAL BINARY PATH OF BLENDER FOR NOW
 echo "Finding Blender's Python path..."
-BLENDER_PYTHON=$(blender --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | grep -Eo '^/.*python[0-9.]+')
+BLENDER_PYTHON=$($BLENDER_BINARY --background --python-expr "import sys; print(sys.executable)" 2>/dev/null | grep -Eo '^/.*python[0-9.]+')
 if [ -z "$BLENDER_PYTHON" ]; then
     echo "Failed to determine Blender's embedded Python path."
     exit 1
@@ -163,14 +165,19 @@ else
     exit 1
 fi
 
-echo "Creating symbolic link for 'fetch.sh'..."
-if [ -f "$USER_HOME/Google-Tiles-Fetcher/fetch.sh" ]; then
-    ln -sf "$USER_HOME/Google-Tiles-Fetcher/fetch.sh" /usr/local/bin/fetch-tiles
-    chmod +x "$USER_HOME/Google-Tiles-Fetcher/fetch.sh"
-    echo "Symbolic link created. You can now use 'fetch-tiles' from anywhere."
-else
-    echo "'fetch.sh' not found in the repository. Please ensure the file exists."
-    exit 1
-fi
+# LATER: Change the default port instead of 5000
+echo "Installation complete. Disable AirPlay Receiver, because this also uses the default flask port 5000."
+echo "To run, first cd to the project repository located at home, inside Google-Tiles-Fetcher, then run:"
+echo "/Applications/Blender.app/Contents/MacOS/Blender --background --python main.py -- map_select_ui"
 
-echo "Installation complete. You can now run by: sudo fetch-tiles"
+# echo "Creating symbolic link for 'fetch.sh'..."
+# if [ -f "$USER_HOME/Google-Tiles-Fetcher/fetch.sh" ]; then
+#     ln -sf "$USER_HOME/Google-Tiles-Fetcher/fetch.sh" /usr/local/bin/fetch-tiles
+#     chmod +x "$USER_HOME/Google-Tiles-Fetcher/fetch.sh"
+#     echo "Symbolic link created. You can now use 'fetch-tiles' from anywhere."
+# else
+#     echo "'fetch.sh' not found in the repository. Please ensure the file exists."
+#     exit 1
+# fi
+
+# echo "Installation complete. You can now run by: sudo fetch-tiles"
