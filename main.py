@@ -40,7 +40,7 @@ def open_output_folder(output_dir):
         #     subprocess.run(["open", output_dir], check=True)
         # else:  # Linux and other Unix-like systems
         #     subprocess.run(["xdg-open", output_dir], check=True)
-        else:  # Linux and other Unix-like systems
+        else:
             print(f"Not on Windows so skipping auto open folder.")
     except Exception as e:
         print(f"Failed to open folder {output_dir}: {e}")

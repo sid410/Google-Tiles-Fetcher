@@ -133,17 +133,6 @@ def validate_collection_and_save_metadata(
 
     metadata = []
 
-    origin_lat, origin_lon = projection.toGeographic(0, 0)
-    metadata.append(
-        {
-            "mesh_ID": "origin:",
-            "max_lat": origin_lat,
-            "max_lon": origin_lon,
-            "min_lat": "scale_factor:",
-            "min_lon": scale_factor,
-        }
-    )
-
     # Calculate combined bounds for all objects in the collection
     for obj in tiles_collection.objects:
         if obj.type == "MESH":
@@ -166,7 +155,39 @@ def validate_collection_and_save_metadata(
                 }
             )
 
-    custom_name = f"{base_name}_{lod}_{global_min_lat}_{global_min_lon}_{global_max_lat}_{global_max_lon}"
+    # Place the global max and mins at the very end of the csv
+    metadata.append(
+        {
+            "mesh_ID": "global_bounds:",
+            "max_lat": global_max_lat,
+            "max_lon": global_max_lon,
+            "min_lat": global_min_lat,
+            "min_lon": global_min_lon,
+        }
+    )
+
+    metadata.append(
+        {
+            "mesh_ID": "extra_data",
+            "max_lat": "----------",
+            "max_lon": "----------",
+            "min_lat": "----------",
+            "min_lon": "----------",
+        }
+    )
+
+    origin_lat, origin_lon = projection.toGeographic(0, 0)
+    metadata.append(
+        {
+            "mesh_ID": "origin:",
+            "max_lat": origin_lat,
+            "max_lon": origin_lon,
+            "min_lat": "scale_factor:",
+            "min_lon": scale_factor,
+        }
+    )
+
+    custom_name = f"{base_name}_{lod}"
     csv_path = Path(output_dir) / f"{custom_name}_metadata.csv"
 
     with csv_path.open(mode="w", newline="", encoding="utf-8") as file:
