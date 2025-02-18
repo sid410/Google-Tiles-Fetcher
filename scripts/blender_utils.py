@@ -230,6 +230,22 @@ def save_blender_file(config):
     return output_dir, custom_name
 
 
+def get_scene_triangles():
+    ## use dependency graph
+    # https://docs.blender.org/api/current/bpy.types.Depsgraph.html
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+
+    # Update first the cache with calc_loop_triangles() before getting the triangle count
+    total_triangles = sum(
+        (obj.data.calc_loop_triangles(), len(obj.data.loop_triangles))[1]
+        for obj in depsgraph.objects
+        if obj.type == "MESH" and obj.data
+    )
+
+    print(f"Total triangles in scene: {total_triangles}")
+    return total_triangles
+
+
 def unpack_textures():
     print("\nUnpacking textures...")
 

@@ -23,6 +23,7 @@ from scripts.blender_utils import (
     set_blosm_preferences,
     import_google_3d_tiles,
     save_blender_file,
+    get_scene_triangles,
     export_gltf,
 )
 from scripts.flask_utils import run_map_selection_ui
@@ -54,6 +55,7 @@ def process_args(arguments, config_path):
         set_blosm_preferences(config)
         import_google_3d_tiles(config)
         output_dir, filename = save_blender_file(config)
+        get_scene_triangles()  # placeholder, update here the json, also add the origin latlon
         export_gltf(output_dir, filename)
         print(f"\nProcessing for {config['blosm']['lod']} completed successfully.")
         return output_dir, filename
